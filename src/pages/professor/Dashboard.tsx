@@ -2,16 +2,15 @@ import { useState, useEffect, useMemo } from "react";
 import { generateInsights } from "../../lib/ai";
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/lib/firebase";
-import { collection, query, getDocs, addDoc, serverTimestamp, onSnapshot, doc, updateDoc, deleteField } from "firebase/firestore";
+import { collection, query, addDoc, serverTimestamp, onSnapshot, doc, updateDoc, deleteField } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import type { Subject, Submission } from "../../types";
-import { Skeleton } from "@/components/ui/skeleton";
 import { COLLEGE_DATA } from "../../lib/data";
 
 import { ThemeToggle } from "@/components/ThemeToggle";
