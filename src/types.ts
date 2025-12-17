@@ -16,6 +16,8 @@ export interface Subject {
     department: string;
     semester: string;
     section: string;
+    requirements?: string[]; // e.g. ['micro', 'macro', 'assignment']
+    aiEnabled?: boolean;
     createdAt: any;
 }
 
@@ -39,5 +41,7 @@ export interface Submission {
     department?: string;
     rollNo?: string;
     sessionYear?: string;
+    submissionType?: string;
+    topic?: string;
     createdAt: any;
 }

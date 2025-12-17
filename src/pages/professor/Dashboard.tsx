@@ -2,16 +2,15 @@ import { useState, useEffect, useMemo } from "react";
 import { generateInsights } from "../../lib/ai";
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/lib/firebase";
-import { collection, query, getDocs, addDoc, serverTimestamp, onSnapshot, doc, updateDoc, deleteField } from "firebase/firestore";
+import { collection, query, addDoc, serverTimestamp, onSnapshot, doc, updateDoc, deleteField } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import type { Subject, Submission } from "../../types";
-import { Skeleton } from "@/components/ui/skeleton";
 import { COLLEGE_DATA } from "../../lib/data";
 
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -22,19 +21,24 @@ const ProfessorDashboard = () => {
     const { currentUser, userData, logout } = useAuth();
     const [subjects, setSubjects] = useState<Subject[]>([]);
     const [submissions, setSubmissions] = useState<Submission[]>([]);
-    const [loading, setLoading] = useState(true);
     
     // Create Subject State
-    const [newSubject, setNewSubject] = useState({ name: '', code: '', department: '', semester: '', section: '' });
+    const [newSubject, setNewSubject] = useState<{
+        name: string; code: string; department: string; semester: string; section: string; requirements: string[]; aiEnabled: boolean 
+    }>({ 
+        name: '', code: '', department: '', semester: '', section: '', requirements: ['Assignment'], aiEnabled: true 
+    });
     const [isCreateOpen, setIsCreateOpen] = useState(false);
 
     // Subject Search State
-    const [searchTerm, setSearchTerm] = useState("");
-    const [showDropdown, setShowDropdown] = useState(false);
+
 
     // Grading State
     const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
     const [marks, setMarks] = useState<string>("");
+    const [viewGroup, setViewGroup] = useState<{
+        studentId: string; studentName: string; subjectId: string; subjectName: string; submissions: Submission[];
+    } | null>(null);
     
     // Profile State
     const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -55,7 +59,6 @@ const ProfessorDashboard = () => {
         const unsubscribeSubmissions = onSnapshot(qSubmissions, (snapshot) => {
             const subs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Submission));
             setSubmissions(subs.sort((a, b) => b.createdAt?.seconds - a.createdAt?.seconds));
-            setLoading(false);
         });
 
         return () => {
@@ -70,13 +73,15 @@ const ProfessorDashboard = () => {
             await addDoc(collection(db, "subjects"), {
                 ...newSubject,
                 // Enforce Professor's Department
+                // Enforce Professor's Department
                 department: userData?.department || newSubject.department,
                 professorId: currentUser.uid,
+                requirements: newSubject.requirements, // Array of required types
+                aiEnabled: newSubject.aiEnabled,
                 createdAt: serverTimestamp()
             });
             setIsCreateOpen(false);
-            setNewSubject({ name: '', code: '', department: userData?.department || '', semester: '', section: '' });
-            setSearchTerm("");
+            setNewSubject({ name: '', code: '', department: userData?.department || '', semester: '', section: '', requirements: ['Assignment'], aiEnabled: true });
         } catch (e) {
             console.error(e);
         }
@@ -86,23 +91,11 @@ const ProfessorDashboard = () => {
     useEffect(() => {
         if (isCreateOpen && userData?.department) {
             setNewSubject(prev => ({ ...prev, department: userData.department || '' }));
-            setSearchTerm("");
-            setShowDropdown(false);
         }
     }, [isCreateOpen, userData]);
 
     // Template Logic
     const deptTemplate = useMemo(() => COLLEGE_DATA.departments.find(d => d.name === userData?.department), [userData?.department]);
-    const availableTemplates = useMemo(() => {
-       if (!deptTemplate || !searchTerm) return [];
-       return deptTemplate.subjects.filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()));
-    }, [deptTemplate, searchTerm]);
-
-    const handleSelectTemplate = (s: {name: string, code: string}) => {
-        setNewSubject(prev => ({ ...prev, name: s.name, code: s.code }));
-        setSearchTerm(s.name);
-        setShowDropdown(false);
-    };
 
     const handleGrade = async () => {
         if (!selectedSubmission) return;
@@ -130,17 +123,13 @@ const ProfessorDashboard = () => {
     const handleSelectSubmission = async (sub: Submission) => {
         setSelectedSubmission(sub);
         setMarks(sub.marks ? sub.marks.toString() : "");
-
-        // Trigger AI if missing OR if it contains old "Offline" data
-        if (!sub.summary || !sub.questions || sub.questions.length === 0 || sub.summary.includes("[AI Offline")) {
-            await runAIGeneration(sub);
-        }
+        // Manual AI trigger only
     };
 
     const runAIGeneration = async (sub: Submission) => {
         try {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const insights: any = await generateInsights(sub.subjectName, sub.studentName, sub.originalFilePath);
+            const insights: any = await generateInsights(sub.subjectName, sub.studentName, sub.originalFilePath, sub.topic);
             
             const finalUpdates = {
                 summary: insights.summary || [],
@@ -269,6 +258,37 @@ const ProfessorDashboard = () => {
                                     <Input value={newSubject.section} onChange={e => setNewSubject({...newSubject, section: e.target.value})} placeholder="e.g. A" />
                                 </div>
                            </div>
+                           <div className="grid gap-2">
+                                <Label>Required Submissions</Label>
+                                <div className="grid grid-cols-2 gap-2 border p-3 rounded-md">
+                                    {['Assignment', 'Micro Project', 'Macro Project', 'Mini Skill Project'].map(type => (
+                                        <div key={type} className="flex items-center gap-2">
+                                            <input 
+                                                type="checkbox"
+                                                id={`req-${type}`}
+                                                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                checked={newSubject.requirements.includes(type)}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) setNewSubject(prev => ({...prev, requirements: [...prev.requirements, type]}));
+                                                    else setNewSubject(prev => ({...prev, requirements: prev.requirements.filter(r => r !== type)}));
+                                                }}
+                                            />
+                                            <label htmlFor={`req-${type}`} className="text-sm cursor-pointer select-none">{type}</label>
+                                        </div>
+                                    ))}
+                                </div>
+                                {newSubject.requirements.length === 0 && <p className="text-[10px] text-destructive">Please select at least one requirement.</p>}
+                           </div>
+                           <div className="flex items-center space-x-2 pt-2">
+                                <input 
+                                    type="checkbox" 
+                                    id="aiEnabled"
+                                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                    checked={newSubject.aiEnabled}
+                                    onChange={e => setNewSubject({...newSubject, aiEnabled: e.target.checked})}
+                                />
+                                <Label htmlFor="aiEnabled" className="cursor-pointer">Enable Generative AI Analysis</Label>
+                           </div>
                       </div>
                       <DialogFooter>
                           <Button onClick={handleCreateSubject}>Create Subject</Button>
@@ -289,50 +309,102 @@ const ProfessorDashboard = () => {
                 <div className="space-y-4">
                     {/* Filter Bar */}
                     <div className="flex items-center gap-4">
-                        <div className="w-[250px]">
-                            <select 
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                                value={filterSubjectId}
-                                onChange={(e) => setFilterSubjectId(e.target.value)}
-                            >
-                                <option value="all">All Subjects</option>
-                                {mySubjects.map(sub => (
-                                    <option key={sub.id} value={sub.id}>
-                                        {sub.name} ({sub.semester}-{sub.section})
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                            Showing {mySubmissions.length} submissions
-                        </div>
+                        <select 
+                            className="flex h-10 w-[250px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            value={filterSubjectId}
+                            onChange={(e) => setFilterSubjectId(e.target.value)}
+                        >
+                            <option value="all">All Subjects</option>
+                            {mySubjects.map(sub => (
+                                <option key={sub.id} value={sub.id}>
+                                    {sub.name} ({sub.semester}-{sub.section})
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                     <div className="rounded-md border">
                         <div className="p-4 grid grid-cols-5 font-semibold border-b bg-muted">
-                            <span>Student</span>
-                            <span>Subject</span>
-                            <span>Date</span>
-                            <span>Status</span>
-                            <span>Action</span>
+                            <span className="col-span-1">Student</span>
+                            <span className="col-span-1">Subject</span>
+                            <span className="col-span-1">Last Update</span>
+                            <span className="col-span-1">Status</span>
+                            <span className="col-span-1 text-right">Action</span>
                         </div>
-                    {mySubmissions.length === 0 ? (
-                         <div className="p-8 text-center text-muted-foreground">No submissions found for your department.</div>
-                    ) : (
-                        mySubmissions.map(sub => (
-                             <div key={sub.id} className="p-4 grid grid-cols-5 items-center border-b last:border-0 hover:bg-muted/50 transition-colors">
-                                <span>{sub.studentName}</span>
-                                <span>{sub.subjectName}</span>
-                                <span>{new Date(sub.createdAt?.seconds * 1000).toLocaleDateString()}</span>
-                                <span>
-                                    <Badge variant={sub.status === 'reviewed' ? 'default' : 'secondary'}>{sub.status}</Badge>
-                                </span>
-                                <span>
-                                    <Button variant="outline" size="sm" onClick={() => handleSelectSubmission(sub)}>Review</Button>
-                                </span>
-                            </div>
-                        ))
-                    )}
+                        {mySubmissions.length === 0 ? (
+                             <div className="p-8 text-center text-muted-foreground">No submissions found.</div>
+                        ) : (
+                            (() => {
+                                // Group Submissions
+                                const groups: Record<string, {
+                                    studentId: string; studentName: string; subjectId: string; subjectName: string; submissions: Submission[]; lastUpdate: any;
+                                }> = {};
+                                mySubmissions.forEach(sub => {
+                                    const key = `${sub.studentId}_${sub.subjectId}`;
+                                    if (!groups[key]) {
+                                        groups[key] = {
+                                            studentId: sub.studentId,
+                                            studentName: sub.studentName,
+                                            subjectId: sub.subjectId,
+                                            subjectName: sub.subjectName,
+                                            submissions: [],
+                                            lastUpdate: sub.createdAt
+                                        };
+                                    }
+                                    groups[key].submissions.push(sub);
+                                    if (sub.createdAt?.seconds > groups[key].lastUpdate?.seconds) groups[key].lastUpdate = sub.createdAt;
+                                });
+                                
+                                return Object.values(groups).map(group => {
+                                    const subject = subjects.find(s => s.id === group.subjectId);
+                                    // @ts-ignore
+                                    const reqs = subject?.requirements || (subject?.submissionType ? [subject.submissionType] : ['Assignment']);
+                                    const submittedCount = new Set(group.submissions.map(s => s.submissionType)).size;
+                                    const reviewedCount = group.submissions.filter(s => s.status === 'reviewed').length;
+                                    const totalReqs = reqs.length;
+
+                                    let badgeVariant: "default" | "secondary" | "destructive" | "outline" = "secondary";
+                                    let statusText = `${submittedCount}/${totalReqs} Submitted`;
+                                    let customClass = "";
+
+                                    if (submittedCount === 0) {
+                                        statusText = "Not Started";
+                                        badgeVariant = "outline";
+                                        customClass = "text-muted-foreground border-dashed";
+                                    } else if (submittedCount === totalReqs) {
+                                        if (reviewedCount >= totalReqs) {
+                                            statusText = "All Graded";
+                                            badgeVariant = "default"; 
+                                            customClass = "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 border-transparent";
+                                        } else {
+                                            statusText = "Needs Review";
+                                            badgeVariant = "secondary";
+                                            customClass = "bg-orange-100 text-orange-700 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-400";
+                                        }
+                                    } else {
+                                        statusText = `In Progress (${submittedCount}/${totalReqs})`;
+                                        badgeVariant = "outline";
+                                        customClass = "text-blue-600 border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800";
+                                    }
+                                    
+                                    return (
+                                        <div key={`${group.studentId}-${group.subjectId}`} className="p-4 grid grid-cols-5 items-center border-b last:border-0 hover:bg-muted/50 transition-colors">
+                                            <span className="col-span-1 font-medium">{group.studentName}</span>
+                                            <span className="col-span-1 text-sm text-muted-foreground">{group.subjectName}</span>
+                                            <span className="col-span-1 text-sm">{new Date(group.lastUpdate?.seconds * 1000).toLocaleDateString()}</span>
+                                            <span className="col-span-1">
+                                                <Badge variant={badgeVariant} className={customClass}>
+                                                    {statusText}
+                                                </Badge>
+                                            </span>
+                                            <span className="col-span-1 text-right">
+                                                <Button variant="outline" size="sm" onClick={() => setViewGroup(group)}>View Work</Button>
+                                            </span>
+                                        </div>
+                                    );
+                                });
+                            })()
+                        )}
                     </div>
                 </div>
             </TabsContent>
@@ -342,13 +414,35 @@ const ProfessorDashboard = () => {
                     {mySubjects.map(sub => (
                          <Card key={sub.id}>
                             <CardHeader>
-                                <CardTitle>{sub.name}</CardTitle>
-                                <CardDescription>{sub.code} • {sub.department}</CardDescription>
+                                <div className="flex justify-between items-start gap-2">
+                                    <div>
+                                        <CardTitle>{sub.name}</CardTitle>
+                                        <CardDescription>{sub.code}</CardDescription>
+                                    </div>
+                                    {/* @ts-ignore */}
+                                    {(sub.requirements || (sub.submissionType ? [sub.submissionType] : [])).length > 0 && (
+                                        <Badge variant="secondary" className="text-[10px]">
+                                            {/* @ts-ignore */}
+                                            {(sub.requirements || [sub.submissionType]).length} Types
+                                        </Badge>
+                                    )}
+                                </div>
+                                <CardDescription>{sub.department}</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-sm">
-                                    <p>Semester: {sub.semester}</p>
-                                    <p>Section: {sub.section}</p>
+                                <div className="text-sm space-y-2">
+                                    <div className="flex gap-4 text-muted-foreground">
+                                        <span>Sem: {sub.semester}</span>
+                                        <span>Sec: {sub.section}</span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                        {/* @ts-ignore */}
+                                        {(sub.requirements || (sub.submissionType ? [sub.submissionType] : [])).map((req: string) => (
+                                            <span key={req} className="px-1.5 py-0.5 bg-muted rounded text-[10px] border">
+                                                {req}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
                             </CardContent>
                          </Card>
@@ -356,6 +450,57 @@ const ProfessorDashboard = () => {
                 </div>
             </TabsContent>
         </Tabs>
+
+        {/* Group Details Dialog */}
+        <Dialog open={!!viewGroup} onOpenChange={(open) => !open && setViewGroup(null)}>
+            <DialogContent className="max-w-3xl">
+                <DialogHeader>
+                    <DialogTitle>{viewGroup?.studentName}</DialogTitle>
+                    <DialogDescription>Submission Status for {viewGroup?.subjectName}</DialogDescription>
+                </DialogHeader>
+                <div className="py-4 space-y-2">
+                    {viewGroup && (() => {
+                        const subject = subjects.find(s => s.id === viewGroup.subjectId);
+                        // @ts-ignore
+                        const reqs: string[] = subject?.requirements || (subject?.submissionType ? [subject.submissionType] : ['Assignment']);
+                        
+                        // Use live submissions data to ensure real-time updates
+                        const liveGroupSubmissions = submissions.filter(s => s.studentId === viewGroup.studentId && s.subjectId === viewGroup.subjectId);
+
+                        return reqs.map((req, idx) => {
+                            const sub = liveGroupSubmissions.find(s => s.submissionType === req);
+                            return (
+                                <div key={idx} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`h-8 w-8 rounded-full flex items-center justify-center ${sub ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'}`}>
+                                            <span className="text-xs font-bold">{idx + 1}</span>
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-sm">{req}</p>
+                                            {sub?.topic && <p className="text-xs text-blue-600 truncate max-w-[200px] font-medium" title={sub.topic}>Topic: {sub.topic}</p>}
+                                            <p className="text-xs text-muted-foreground">{sub ? "Submitted" : "Pending"}</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        {sub ? (
+                                            <div className="flex items-center gap-2">
+                                                <Badge variant={sub.status === 'reviewed' ? 'default' : 'secondary'}>{sub.status}</Badge>
+                                                {sub.marks && <span className="text-sm font-bold ml-2">{sub.marks}/100</span>}
+                                                <Button size="sm" variant="outline" onClick={() => handleSelectSubmission(sub)}>
+                                                    Review
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <Badge variant="outline" className="text-muted-foreground border-dashed">Not Submitted</Badge>
+                                        )}
+                                    </div>
+                                </div>
+                            )
+                        });
+                    })()}
+                </div>
+            </DialogContent>
+        </Dialog>
 
         {/* Global Review Dialog */}
         <Dialog open={!!selectedSubmission} onOpenChange={(open) => !open && setSelectedSubmission(null)}>
@@ -365,8 +510,18 @@ const ProfessorDashboard = () => {
                     <DialogHeader className="p-6 border-b">
                         <div className="flex items-center justify-between">
                             <div>
-                                <DialogTitle className="text-xl">Review Submission: {displaySub.subjectName}</DialogTitle>
-                                <DialogDescription className="mt-1">Student: <span className="font-medium text-foreground">{displaySub.studentName}</span></DialogDescription>
+                                <DialogTitle className="text-xl flex items-center gap-3">
+                                    <span>Review: {displaySub.subjectName}</span>
+                                    {displaySub.submissionType && (
+                                        <Badge variant="outline" className="text-xs font-normal">
+                                            {displaySub.submissionType}
+                                        </Badge>
+                                    )}
+                                </DialogTitle>
+                                <DialogDescription className="mt-1">
+                                    Student: <span className="font-medium text-foreground">{displaySub.studentName}</span>
+                                    {displaySub.topic && <span className="ml-4 inline-block text-xs text-blue-600 font-semibold bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded border border-blue-100 dark:border-blue-800">Topic: {displaySub.topic}</span>}
+                                </DialogDescription>
                             </div>
                             <div className="flex items-center gap-4">
                                 <div className="flex items-center gap-2">
@@ -412,9 +567,19 @@ const ProfessorDashboard = () => {
                                 </div>
                                 <div className="bg-muted/50 rounded-lg p-4 space-y-4">
                                     {!displaySub.summary && !displaySub.questions ? (
-                                        <div className="text-center text-sm text-muted-foreground py-8">
-                                            Generating analysis...
-                                        </div>
+                                        subjects.find(s => s.id === displaySub.subjectId)?.aiEnabled === false ? (
+                                            <div className="text-center text-sm text-muted-foreground py-12 border-2 border-dashed rounded-lg bg-muted/10 opacity-70">
+                                                <span className="text-2xl block mb-2">🚫</span>
+                                                AI Analysis Disabled
+                                            </div>
+                                        ) : (
+                                            <div className="text-center py-8">
+                                                 <p className="text-sm text-muted-foreground mb-4">No analysis generated yet.</p>
+                                                 <Button variant="secondary" onClick={() => runAIGeneration(displaySub)}>
+                                                     Generate AI Analysis
+                                                 </Button>
+                                            </div>
+                                        )
                                     ) : (
                                     <>
                                     <div className="flex items-center justify-between border-b border-border/50 pb-2">

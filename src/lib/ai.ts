@@ -51,7 +51,7 @@ async function parsePdfPages(pdf: any): Promise<string> {
     return fullText.trim();
 }
 
-export const generateInsights = async (subjectName: string, studentName: string, pdfUrl: string) => {
+export const generateInsights = async (subjectName: string, studentName: string, pdfUrl: string, topicName?: string) => {
     if (!API_KEY) throw new Error("Missing Gemini API Key in .env");
 
     // 1. Extract Text
@@ -62,6 +62,7 @@ export const generateInsights = async (subjectName: string, studentName: string,
     // 2. Call Gemini SDK (Single Model: gemini-1.5-flash)
     const prompt = `
     Analyze this student project report for subject "${subjectName}" by student "${studentName}".
+    ${topicName ? `DECLARED TOPIC: "${topicName}".` : ""}
     
     PDF CONTENT:
     "${pdfText.substring(0, 30000)}" 
@@ -69,25 +70,72 @@ export const generateInsights = async (subjectName: string, studentName: string,
     OUTPUT REQUIREMENTS:
     1. SUMMARY: A concise summary (3-5 bullet points).
     2. QUESTIONS: Exactly 5 viva/technical questions.
-    3. MARKS: Suggested marks out of 100 based on quality/depth.
+    3. MARKS: Suggested marks out of 100 based on quality/depth. 
+       ${topicName ? `IMPORTANT: Check if the content strictly matches the declared topic "${topicName}". If not, significantly penalize marks and state "Off-topic submission" in justification.` : ""}
     4. JUSTIFICATION: A 1-sentence reason for the marks.
+    5. CREATIVITY_ANALYSIS: Brief comment on originality.
 
     Return STRICT JSON ONLY:
     {
         "summary": ["point 1", "point 2", ...],
         "questions": ["q1", "q2", "q3", "q4", "q5"],
         "suggested_marks": 75,
-        "justification": "..."
+        "justification": "...",
+        "creativity_analysis": "..."
     }
     `;
 
-    console.log("Calling Gemini 1.5 Flash (SDK)...");
+    console.log("Calling Gemini SDK...");
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
 
     // Clean JSON
+    const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
+    return JSON.parse(jsonStr);
+};
+
+export const checkTopicSimilarity = async (newTopic: string, subjectName: string, existingTopics: string[], pdfUrl?: string) => {
+    let pdfContext = "";
+    if (pdfUrl) {
+        try {
+            console.log("Extracting text for topic verification...");
+            const text = await extractTextFromPDF(pdfUrl);
+            pdfContext = text.substring(0, 8000); // Check first ~8k characters
+        } catch (e) {
+            console.warn("Could not extract PDF text for topic check", e);
+        }
+    }
+
+    const prompt = `
+    Subject: "${subjectName}"
+    Proposed Topic: "${newTopic}"
+    Existing Topics: ${JSON.stringify(existingTopics)}
+    ${pdfContext ? `PDF Content Start: "${pdfContext}"` : ""}
+
+    Task:
+    1. UNIQUENESS CHECK: Is "Proposed Topic" semantically unique from "Existing Topics"? 
+    2. RELEVANCE CHECK: ${pdfContext ? `Does the provided "PDF Content" matches the "Proposed Topic"?` : "Skip (No PDF provided)."}
+    3. SUBJECT CONTEXT CHECK: is the "Proposed Topic" and "PDF Content" valid and relevant for the academic Subject "${subjectName}"? (e.g. A "Biology" paper is invalid for a "Data Structures" subject).
+
+    Rules:
+    - If Topic is duplicate/similar -> isUnique: false, message: "Topic overlaps with existing project: [Name]"
+    - If Content is irrelevant to Topic -> isUnique: false, message: "Content Mismatch: The document appears to be about [Detected Topic] instead of [Proposed Topic]. Reason: [Brief Explanation]."
+    - If Unrelated to Subject -> isUnique: false, message: "Subject Mismatch: This topic does not belong to the subject '${subjectName}'. Please choose a valid topic."
+    - If Valid -> isUnique: true, message: "Topic is unique, matching, and relevant to the subject."
+
+    Return STRICT JSON ONLY:
+    {
+        "isUnique": boolean,
+        "message": "...",
+        "suggestions": ["Idea 1", "Idea 2", "Idea 3"] (Only if rejected)
+    }
+    `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
     const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
     return JSON.parse(jsonStr);
 };
