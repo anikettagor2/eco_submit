@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2.5cm 2cm;
+            @bottom-right {
+                content: counter(page);
+                font-family: "Times New Roman", Times, serif;
+                font-size: 11pt;
+            }
+        }
+        
+        body {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 12pt;
+            line-height: 1.5;
+            color: #000;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: #000;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+        }
+
+        a { color: #000; text-decoration: none; }
+        img { max-width: 100%; height: auto; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 1em; }
+        th, td { border: 1px solid #000; padding: 5px; text-align: left; }
+
+        .title-page {
+            text-align: center;
+            page-break-after: always;
+        }
+
+        .certificate-page, .declaration-page {
+            page-break-after: always;
+        }
+        
+        .center-text { text-align: center; }
+        .bold-text { font-weight: bold; }
+        
+        .signature-block {
+            margin-top: 3cm;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        /* Flexbox doesn't work perfectly in older WeasyPrints for complex page layouts, 
+           but simpler float or tables work better for signatures if needed.
+           WeasyPrint 67 supports Flexbox reasonably well. */
+        
+        .signatures {
+            width: 100%;
+            margin-top: 4cm;
+        }
+        .sig-left { float: left; width: 45%; }
+        .sig-right { float: right; width: 45%; text-align: right; }
+        .clearfix::after { content: ""; clear: both; display: table; }
+
+    </style>
+</head>
+<body>
+
+    <!-- 1. TITLE PAGE -->
+    <div class="title-page">
+        <div style="margin-top: 2cm;"></div>
+        
+        <h1 style="font-size: 24pt; margin-bottom: 2cm;">{{ title }}</h1>
+
+        <p style="font-size: 14pt; margin-bottom: 1cm;">
+            <em>A Project Report Submitted in partial fulfillment of the requirements<br>
+            for the degree of</em>
+        </p>
+
+        <h2 style="font-size: 18pt;">Bachelor of Technology</h2>
+        
+        <p style="font-size: 14pt; margin: 0.5cm 0;">In</p>
+        
+        <h2 style="font-size: 18pt;">{{ department }}</h2>
+
+        <div style="margin-top: 3cm;">
+            <strong>Submitted by:</strong><br>
+            <span style="font-size: 16pt;">{{ author_name }}</span><br>
+            (Roll No: {{ roll_no }})
+        </div>
+
+        <div style="margin-top: 2cm;">
+            <strong>Under the Guidance of:</strong><br>
+            <span style="font-size: 16pt;">{{ guide_name }}</span>
+        </div>
+
+        <div style="margin-top: auto; padding-top: 3cm;">
+            <strong>{{ session_year }}</strong>
+        </div>
+    </div>
+
+    <!-- 2. CERTIFICATE -->
+    <div class="certificate-page">
+        <h2 class="center-text">CERTIFICATE</h2>
+        <div style="margin-top: 2cm;">
+            <p style="text-align: justify;">
+                This is to certify that the project entitled <strong>{{ title }}</strong> 
+                submitted by <strong>{{ author_name }}</strong> (Roll No: {{ roll_no }}) 
+                to the <strong>{{ department }}</strong>, in partial fulfillment for the award of the degree of 
+                <strong>Bachelor of Technology</strong>, is a bona fide record of work carried out by them under my supervision.
+            </p>
+        </div>
+
+        <div class="signatures clearfix">
+            <div class="sig-left">
+                <strong>{{ guide_name }}</strong><br>
+                (Project Guide)
+            </div>
+            <div class="sig-right">
+                <strong>Head of Department</strong><br>
+                {{ department }}
+            </div>
+        </div>
+
+        <div style="margin-top: 4cm; text-align: center;">
+            <span style="margin-right: 4cm;">External Examiner</span>
+            <span>Internal Examiner</span>
+        </div>
+    </div>
+
+    <!-- 3. DECLARATION -->
+    <div class="declaration-page">
+        <h2 class="center-text">DECLARATION</h2>
+        <div style="margin-top: 2cm;">
+            <p style="text-align: justify;">
+                I hereby declare that the project entitled <strong>{{ title }}</strong> 
+                submitted in partial fulfillment of the requirements for the award of the degree of 
+                Bachelor of Technology in <strong>{{ department }}</strong> is a record of original work done by me 
+                under the supervision of <strong>{{ guide_name }}</strong>. This project work has not been 
+                submitted to any other University or Institute for the award of any degree or diploma.
+            </p>
+        </div>
+
+        <div class="signatures clearfix" style="margin-top: 3cm;">
+            <div class="sig-right">
+                <strong>{{ author_name }}</strong><br>
+                (Roll No: {{ roll_no }})
+            </div>
+        </div>
+    </div>
+    
+    <!-- 4. ACKNOWLEDGMENT -->
+    <div class="declaration-page">
+        <h2 class="center-text">ACKNOWLEDGMENT</h2>
+        <div style="margin-top: 2cm;">
+            <p style="text-align: justify;">
+                I would like to express my sincere gratitude to my guide <strong>{{ guide_name }}</strong> 
+                for their continuous support and guidance throughout this project. I also thank the Head of the Department, 
+                {{ department }}, and the faculty members for their encouragement.
+            </p>
+        </div>
+        <div class="signatures clearfix" style="margin-top: 2cm;">
+            <div class="sig-right">
+                <strong>{{ author_name }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. CONTENT -->
+    <div style="page-break-before: always;">
+        {% if abstract %}
+            <h3>Abstract</h3>
+            <p>{{ abstract }}</p>
+            <hr>
+        {% endif %}
+        
+        {{ body_content | safe }}
+    </div>
+
+</body>
+</html>

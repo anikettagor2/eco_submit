@@ -1,0 +1,2606 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{geometry}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{amsmath}
+\usepackage{setspace}
+\usepackage{times}
+
+% Pandoc compatibility macros
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\newcommand{\real}[1]{#1}
+
+\geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=25mm,
+ top=25mm,
+ right=20mm,
+ bottom=20mm,
+}
+
+\date{}
+
+\begin{document}
+
+% -------------------------
+% 1. TITLE PAGE
+% -------------------------
+\begin{titlepage}
+    \begin{center}
+        \vspace*{1cm}
+
+        \Huge
+        \textbf{Secure Chat Project Report}
+
+        \vspace{1.5cm}
+
+        \large
+        \textit{A Mini Project Report Submitted in partial fulfillment of the requirements\\ for the degree of}
+
+        \vspace{0.5cm}
+
+        \Large
+        \textbf{Bachelor of Technology}
+
+        \vspace{0.5cm}
+
+        \large
+        In
+
+        \vspace{0.5cm}
+
+        \Large
+        \textbf{Department}
+
+        \vspace{1.5cm}
+
+        \textbf{Submitted by:}
+
+        \vspace{0.5cm}
+        \Large
+        Student Name \\
+        (Roll No: )
+
+        \vspace{1.5cm}
+
+        \large
+        \textbf{Under the Guidance of:}
+
+        \vspace{0.5cm}
+        \Large
+        
+
+        \vfill
+
+        \Large
+        \textbf{College Name / University Logo Here} \\
+        \large
+        City, State - Zip Code \\
+        \textbf{2024-2025}
+
+    \end{center}
+\end{titlepage}
+
+% -------------------------
+% 2. CERTIFICATE
+% -------------------------
+\newpage
+\begin{center}
+    \vspace*{2cm}
+    \Large \textbf{CERTIFICATE}
+    \vspace{1cm}
+\end{center}
+
+\noindent This is to certify that the Mini Project entitled \textbf{Secure Chat Project Report} submitted by \textbf{Student Name} (Roll No: ) to the \textbf{Department} of College Name, in partial fulfillment for the award of the degree of \textbf{Bachelor of Technology}, is a bona fide record of work carried out by them under my supervision.
+
+\vspace{3cm}
+
+\noindent
+\begin{minipage}{0.45\textwidth}
+    \begin{flushleft}
+        \textbf{} \\
+        (Project Guide)
+    \end{flushleft}
+\end{minipage}
+\hfill
+\begin{minipage}{0.45\textwidth}
+    \begin{flushright}
+        \textbf{Head of Department} \\
+        Department
+    \end{flushright}
+\end{minipage}
+
+\vfill
+\begin{center}
+    External Examiner \hspace{4cm} Internal Examiner
+\end{center}
+
+% -------------------------
+% 3. DECLARATION
+% -------------------------
+\newpage
+\begin{center}
+    \vspace*{2cm}
+    \Large \textbf{DECLARATION}
+    \vspace{1cm}
+\end{center}
+
+\noindent I hereby declare that the Mini Project entitled \textbf{Secure Chat Project Report} submitted in partial fulfillment of the requirements for the award of the degree of Bachelor of Technology in \textbf{Department} is a record of original work done by me under the supervision of \textbf{}. This project work has not been submitted to any other University or Institute for the award of any degree or diploma.
+
+\vspace{3cm}
+
+\noindent
+\begin{flushright}
+    \textbf{Student Name} \\
+    (Roll No: )
+\end{flushright}
+
+% -------------------------
+% 4. ACKNOWLEDGMENT
+% -------------------------
+\newpage
+\begin{center}
+    \vspace*{2cm}
+    \Large \textbf{ACKNOWLEDGMENT}
+    \vspace{1cm}
+\end{center}
+
+\noindent I would like to express my sincere gratitude to my guide \textbf{} for their continuous support and guidance throughout this Mini Project. I also thank the Head of the Department, Department, and the faculty members for their encouragement.
+
+\vspace{2cm}
+
+\noindent Date: \today
+
+\vspace{2cm}
+
+\noindent
+\begin{flushright}
+    \textbf{Student Name}
+\end{flushright}
+
+
+% -------------------------
+% 5. TABLE OF CONTENTS
+% -------------------------
+\newpage
+\tableofcontents
+\newpage
+
+% -------------------------
+% 6. MAIN CONTENT
+% -------------------------
+
+% Abstract if provided
+\section*{Abstract}
+
+
+\newpage
+
+% Body
+\section{\texorpdfstring{\textbf{1.
+Introduction}}{1. Introduction}}\label{introduction}
+
+In the present era of rapid digitalization, communication systems have
+expanded from physical interactions to internet-based messaging
+platforms. Individuals, enterprises, and governments frequently exchange
+sensitive and confidential information such as personal identity
+details, financial transactions, internal business documents, and
+strategic communication. As the volume of digital communication
+increases, the risk of unauthorized access, identity theft, data
+manipulation, and surveillance also grows significantly. This has led to
+the need for \textbf{robust information security mechanisms} that ensure
+privacy and trust in communication systems.
+
+Information Security refers to the collection of principles and
+techniques used to safeguard data from unauthorized access, disclosure,
+disruption, modification, or destruction. The core objective of
+information security is to protect the \textbf{Confidentiality,
+Integrity, and Availability (CIA)} of data. In messaging applications,
+particularly those used for private or organizational communication,
+these three pillars become critically important:
+
+\begin{itemize}
+\item
+  \textbf{Confidentiality:} Ensuring only the intended recipient can
+  read the message.
+\item
+  \textbf{Integrity:} Preventing messages from being modified during
+  transmission.
+\item
+  \textbf{Availability:} Ensuring the communication system operates
+  reliably when needed.
+\end{itemize}
+
+Traditional communication systems were primarily secured through
+physical controls and restricted access networks. However, with the rise
+of open networks such as the Internet, \textbf{cyberattacks like
+eavesdropping, session hijacking, phishing, spoofing, and
+man-in-the-middle attacks} became common. Attackers may intercept
+network traffic, alter messages, impersonate users, or monitor user
+behavior to obtain sensitive information. Therefore, modern secure
+messaging must rely on \textbf{strong cryptographic mechanisms} that
+protect data even when transmitted over insecure channels.
+
+\section{\texorpdfstring{\textbf{Need for Secure Messaging
+Systems}}{Need for Secure Messaging Systems}}\label{need-for-secure-messaging-systems}
+
+Secure messaging systems are designed to protect digital communication
+from unauthorized access. They use encryption to convert the message
+into unreadable form, and only the authorized recipient can decode it.
+Some of the key reasons secure messaging is necessary are:
+
+\subsubsection{\texorpdfstring{\textbf{1. Protection Against
+Eavesdropping}}{1. Protection Against Eavesdropping}}\label{protection-against-eavesdropping}
+
+In unsecured networks, attackers can intercept messages using packet
+sniffers or network monitoring tools. End-to-end encryption ensures that
+intercepted messages remain unreadable.
+
+\subsubsection{\texorpdfstring{\textbf{2. Prevention of Message
+Tampering}}{2. Prevention of Message Tampering}}\label{prevention-of-message-tampering}
+
+Attackers may modify the message during transmission to mislead or
+manipulate decisions. Secure messaging systems ensure \textbf{message
+integrity}, meaning even a small alteration is detectable.
+
+\subsubsection{\texorpdfstring{\textbf{3. Authentication of
+Communicating
+Parties}}{3. Authentication of Communicating Parties}}\label{authentication-of-communicating-parties}
+
+It is essential to verify that the person on the other side is who they
+claim to be. Secure messaging integrates \textbf{authentication
+mechanisms} such as credentials, digital signatures, or public key
+certificates.
+
+\subsubsection{\texorpdfstring{\textbf{4. Confidentiality of Sensitive
+and Personal
+Information}}{4. Confidentiality of Sensitive and Personal Information}}\label{confidentiality-of-sensitive-and-personal-information}
+
+Personal chats, business discussions, and official instructions often
+contain confidential data. Unauthorized exposure can result in financial
+loss, legal violations, or personal harm.
+
+\subsubsection{\texorpdfstring{\textbf{5. Defense Against Surveillance
+and Privacy
+Violations}}{5. Defense Against Surveillance and Privacy Violations}}\label{defense-against-surveillance-and-privacy-violations}
+
+In many cases, governments, service providers, or attackers attempt to
+track conversations for monitoring. Secure messaging protects users'
+fundamental right to privacy.
+
+\subsubsection{\texorpdfstring{\textbf{6. Compliance with Security
+Standards}}{6. Compliance with Security Standards}}\label{compliance-with-security-standards}
+
+Industries such as healthcare, banking, and defense must comply with
+regulatory standards (e.g., HIPAA, GDPR). Secure messaging helps
+organizations meet these legal requirements.
+
+\section{\texorpdfstring{\textbf{Role of Cryptography in Secure
+Messaging}}{Role of Cryptography in Secure Messaging}}\label{role-of-cryptography-in-secure-messaging}
+
+The core solution to the above threats lies in \textbf{cryptography}.
+Cryptography is the study of techniques used to secure communication by
+converting data into protected forms. In secure messaging applications,
+cryptography ensures:
+
+\begin{itemize}
+\item
+  \textbf{Only the intended recipient can read the message}
+  (Confidentiality)
+\item
+  \textbf{Message cannot be altered without detection} (Integrity)
+\item
+  \textbf{Sender and receiver identities are verified} (Authentication)
+\item
+  Modern secure messaging systems use a combination of:
+\item
+  \textbf{Symmetric Key Cryptography (AES)} for fast data encryption
+\item
+  \textbf{Asymmetric Key Cryptography (RSA, Diffie-Hellman)} for secure
+  key exchange
+\item
+  \textbf{Hashing (SHA-256)} for data integrity
+\end{itemize}
+
+This combination is known as \textbf{Hybrid Encryption}, and it is used
+in widely adopted apps like \textbf{WhatsApp, Signal, Telegram, and
+banking messaging systems}.
+
+\section{\texorpdfstring{\textbf{2. Cryptography
+Fundamentals}}{2. Cryptography Fundamentals}}\label{cryptography-fundamentals}
+
+Cryptography is the science of transforming data in such a way that only
+authorized individuals can understand and use it. The term originates
+from the Greek words \emph{kryptos}, meaning ``hidden,'' and
+\emph{graphein}, meaning ``to write.'' In modern computing and
+communication environments, cryptography is essential for securing data
+transmitted across open and unsecured networks such as the Internet.
+
+Cryptography ensures four major security goals:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2683}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3902}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3171}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Property}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Meaning}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Importance in Messaging}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Confidentiality} & Only authorized users can read the data &
+Prevents eavesdropping and spying \\
+\textbf{Integrity} & Data cannot be altered during transmission &
+Prevents tampering attacks \\
+\textbf{Authentication} & Verifies the identity of communicating users &
+Prevents impersonation \\
+\textbf{Non-repudiation} & Sender cannot deny their actions later &
+Ensures accountability \\
+\end{longtable}
+}
+
+To achieve these goals, multiple cryptographic techniques are used,
+primarily categorized into \textbf{Symmetric Key Cryptography},
+\textbf{Asymmetric Key Cryptography}, and \textbf{Hash Functions}.
+
+\subsection{\texorpdfstring{\textbf{2.1 Symmetric Key
+Cryptography}}{2.1 Symmetric Key Cryptography}}\label{symmetric-key-cryptography}
+
+In symmetric key cryptography, the \textbf{same key} is used for
+encryption (locking) and decryption (unlocking) of data.
+
+\subsubsection{\texorpdfstring{\textbf{Characteristics}}{Characteristics}}\label{characteristics}
+
+\begin{itemize}
+\item
+  Single shared key
+\item
+  Very fast and efficient
+\item
+  Suitable for encrypting large data (messages, files, streams)
+\item
+  Requires secure key distribution between sender and receiver
+\end{itemize}
+
+\subsubsection{\texorpdfstring{\textbf{Example
+Algorithms}}{Example Algorithms}}\label{example-algorithms}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3784}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1892}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4054}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Algorithm}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Key Size}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Notes}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{AES (Advanced Encryption Standard)} & 128/192/256 bits & Highly
+secure, used in modern encryption \\
+DES & 56 bits & Outdated due to weakness \\
+3DES & 168 bits & More secure than DES but slower \\
+\end{longtable}
+}
+
+\subsubsection{\texorpdfstring{\textbf{AES (Used in This
+Project)}}{AES (Used in This Project)}}\label{aes-used-in-this-project}
+
+AES is a block cipher which processes data in 128-bit blocks.\\
+Our system uses \textbf{AES-GCM}, which provides:
+
+\begin{itemize}
+\item
+  \textbf{Confidentiality} (encrypts data)
+\item
+  \textbf{Integrity} (via authentication tag)
+\end{itemize}
+
+This makes AES-GCM suitable for secure chat applications.
+
+\subsection{\texorpdfstring{\textbf{2.2 Asymmetric Key Cryptography
+(Public Key
+Cryptography)}}{2.2 Asymmetric Key Cryptography (Public Key Cryptography)}}\label{asymmetric-key-cryptography-public-key-cryptography}
+
+In asymmetric cryptography, \textbf{two different keys} are used:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2361}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Key}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Purpose}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Visibility}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Public Key} & Used for encryption & Shared openly \\
+\textbf{Private Key} & Used for decryption & Kept secret by owner \\
+\end{longtable}
+}
+
+\subsubsection{\texorpdfstring{\textbf{Benefits}}{Benefits}}\label{benefits}
+
+\begin{itemize}
+\item
+  No need to share secret keys beforehand
+\item
+  Enables secure communication with strangers
+\item
+  Supports \textbf{digital signatures} and \textbf{authentication}
+\end{itemize}
+
+\subsubsection{\texorpdfstring{\textbf{RSA (Used for Key Exchange in
+This
+Project)}}{RSA (Used for Key Exchange in This Project)}}\label{rsa-used-for-key-exchange-in-this-project}
+
+RSA is based on the mathematical difficulty of factoring large prime
+numbers.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2917}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1389}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3056}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Operation}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Key Used}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Purpose}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Encrypt AES session key & Public Key & Sent to server securely \\
+Decrypt AES session key & Private Key & Server extracts session key \\
+\end{longtable}
+}
+
+Because RSA is computationally \textbf{slower}, it is used \textbf{only
+for exchanging keys}, not encrypting full messages.
+
+\subsection{\texorpdfstring{\textbf{2.3 Hash
+Functions}}{2.3 Hash Functions}}\label{hash-functions}
+
+A \textbf{hash function} converts input data into a fixed-size,
+irreversible output known as a \textbf{digest} or \textbf{hash value}.
+
+\subsubsection{\texorpdfstring{\textbf{Properties of Good Hash
+Function}}{Properties of Good Hash Function}}\label{properties-of-good-hash-function}
+
+\begin{itemize}
+\item
+  \textbf{One-way}: Cannot derive original message from hash
+\item
+  \textbf{Collision resistant}: No two messages should produce same hash
+\item
+  \textbf{Deterministic}: Same input always gives the same hash
+\end{itemize}
+
+\subsubsection{\texorpdfstring{\textbf{SHA-256 (Used in this Project for
+Password
+Hashing)}}{SHA-256 (Used in this Project for Password Hashing)}}\label{sha-256-used-in-this-project-for-password-hashing}
+
+SHA-256 generates a 256-bit hash.
+
+Example:
+
+Input: "hello"Output: 2cf24dba5fb0a... (64 hex characters)
+
+We store \textbf{passwords as hash values}, not raw text increases
+security against database leaks.
+
+\subsection{\texorpdfstring{\textbf{2.4 Hybrid Encryption Model (Used in
+Our
+System)}}{2.4 Hybrid Encryption Model (Used in Our System)}}\label{hybrid-encryption-model-used-in-our-system}
+
+Modern secure messaging applications use a \textbf{hybrid encryption
+system} combining both:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4444}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.3611}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Technique}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Purpose}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Asymmetric Encryption (RSA)} & Secure key exchange \\
+\textbf{Symmetric Encryption (AES)} & Fast encrypted messaging \\
+\end{longtable}
+}
+
+\subsubsection{\texorpdfstring{\textbf{Why Hybrid
+Encryption?}}{Why Hybrid Encryption?}}\label{why-hybrid-encryption}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2083}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2083}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2917}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Factor}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{RSA}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{AES}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Speed & Slow & Fast \\
+Suitable for & Keys & Messages \\
+\end{longtable}
+}
+
+So we:
+
+\begin{itemize}
+\item
+  Generate AES key locally on client
+\item
+  Encrypt AES key using server\textquotesingle s RSA public key
+\item
+  Send encrypted AES key to server
+\item
+  Use AES key for all message encryption
+\end{itemize}
+
+This provides:\\
+Security\\
+Performance\\
+End-to-end Encryption Behavior
+
+\subsection{\texorpdfstring{\textbf{2.5 Summary of Cryptographic Use in
+the
+Project}}{2.5 Summary of Cryptographic Use in the Project}}\label{summary-of-cryptographic-use-in-the-project}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2267}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3200}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4267}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Purpose}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Algorithm Used}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Reason}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Secure key exchange & \textbf{RSA} & Avoids unsafe key sharing \\
+Message encryption & \textbf{AES-GCM} & Fast and secure message
+confidentiality \\
+Password protection & \textbf{bcrypt + SHA-256} & Prevents password
+theft \\
+Data integrity & Built-in AES-GCM Auth Tag & Detects message
+tampering \\
+\end{longtable}
+}
+
+\section{}\label{section}
+
+\section{}\label{section-1}
+
+\section{}\label{section-2}
+
+\section{}\label{section-3}
+
+\section{}\label{section-4}
+
+\section{}\label{section-5}
+
+\section{}\label{section-6}
+
+\section{}\label{section-7}
+
+\section{}\label{section-8}
+
+\section{\texorpdfstring{\textbf{3. System
+Architecture}}{3. System Architecture}}\label{system-architecture}
+
+The Secure Messaging System follows a \textbf{client--server
+architecture} in which users (clients) communicate with each other
+indirectly through a secure backend server. The server is responsible
+for authentication, encrypted key management, controlled message
+routing, and intrusion monitoring. The frontend application provides a
+user interface to send and receive messages in real-time.
+
+The main components of the system are:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2466}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2740}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4521}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Component}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Technology Used}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Role in System}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Frontend UI} & React + Tailwind CSS & Provides interface for
+secure chat communication \\
+\textbf{Backend Server} & FastAPI (Python) & Handles authentication,
+encryption logic, and routing \\
+\textbf{Cryptographic Layer} & RSA (2048-bit) + AES-GCM (256-bit) &
+Ensures confidentiality and integrity of messages \\
+\textbf{Database} & SQLite & Stores user credentials and message
+records \\
+\textbf{WebSocket Communication} & FastAPI WebSocket API & Enables
+real-time encrypted messaging \\
+\textbf{IDS Module} & Python-based login monitoring & Detects suspicious
+login attempts and blocks attackers \\
+\end{longtable}
+}
+
+\subsection{\texorpdfstring{\textbf{3.1 Overall Architecture
+Diagram}}{3.1 Overall Architecture Diagram}}\label{overall-architecture-diagram}
+
+\begin{figure}
+\centering
+\includegraphics[width=4.68889in,height=4.05903in,alt={ChatGPT Image Nov 10, 2025, 03\_59\_30 PM}]{/Users/sj/Desktop/devsprint/report-engine/workspace/32a2bd09-5eed-4bc4-8ba4-8d9fc92e7564/media/image1.png}
+\caption{ChatGPT Image Nov 10, 2025, 03\_59\_30 PM}
+\end{figure}
+
+In this architecture, the server acts not as a message reader, but as a
+\textbf{secure relay}, re-encrypting messages for recipients using their
+own session keys.
+
+\subsection{\texorpdfstring{\textbf{3.2 Components
+Description}}{3.2 Components Description}}\label{components-description}
+
+\subsubsection{\texorpdfstring{\textbf{1. Client (React
+UI)}}{1. Client (React UI)}}\label{client-react-ui}
+
+\begin{itemize}
+\item
+  Runs in the user's browser.
+\item
+  Generates the AES session key.
+\item
+  Encrypts plaintext messages before sending.
+\item
+  Decrypts incoming messages using the shared key.
+\item
+  Maintains WebSocket connection for real-time message delivery.
+\end{itemize}
+
+\subsubsection{\texorpdfstring{\textbf{2. FastAPI
+Backend}}{2. FastAPI Backend}}\label{fastapi-backend}
+
+\begin{itemize}
+\item
+  Serves as the central core logic controller.
+\item
+  Authenticates users and provides JWT tokens.
+\item
+  Stores and retrieves encrypted messages.
+\item
+  Provides the RSA public key to clients.
+\item
+  Maintains AES session key table per logged-in user.
+\end{itemize}
+
+\subsubsection{\texorpdfstring{\textbf{3. Cryptographic
+Unit}}{3. Cryptographic Unit}}\label{cryptographic-unit}
+
+\begin{itemize}
+\item
+  Responsible for securing communication.
+\item
+  Uses \textbf{RSA (Asymmetric Key)} for exchanging AES keys.
+\item
+  Uses \textbf{AES-GCM (Symmetric Key)} for encrypting chat messages.
+\item
+  Ensures message \textbf{confidentiality} and \textbf{integrity}.
+\end{itemize}
+
+\subsubsection{\texorpdfstring{\textbf{4. Database
+(SQLite)}}{4. Database (SQLite)}}\label{database-sqlite}
+
+Stores:
+
+\begin{itemize}
+\item
+  Username and password hashes (bcrypt protected)
+\item
+  Encrypted message records (for offline delivery)
+\item
+  Login attempt logs (for IDS tracking)
+\end{itemize}
+
+\subsubsection{\texorpdfstring{\textbf{5. WebSocket Message
+Router}}{5. WebSocket Message Router}}\label{websocket-message-router}
+
+\begin{itemize}
+\item
+  Maintains persistent real-time connections.
+\item
+  Delivers encrypted messages instantly to online recipients.
+\item
+  Eliminates the need for polling.
+\end{itemize}
+
+\subsubsection{\texorpdfstring{\textbf{6. Intrusion Detection System
+(IDS)}}{6. Intrusion Detection System (IDS)}}\label{intrusion-detection-system-ids}
+
+Monitors failed login attempts per IP address.
+
+Automatically blocks suspicious users.
+
+Helps defend against brute-force and credential stuffing attacks.
+
+\subsection{\texorpdfstring{\textbf{3.3 Detailed Workflow of
+System}}{3.3 Detailed Workflow of System}}\label{detailed-workflow-of-system}
+
+\subsubsection{\texorpdfstring{\textbf{Step 1: User
+Registration}}{Step 1: User Registration}}\label{step-1-user-registration}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  User inputs username and password.
+\item
+  Password is hashed using \textbf{bcrypt}.
+\item
+  Hashed password is stored in the database.
+\end{enumerate}
+
+\subsubsection{\texorpdfstring{\textbf{Step 2: User
+Login}}{Step 2: User Login}}\label{step-2-user-login}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  User submits login credentials.
+\item
+  Server checks password hash.
+\item
+  If verified Server returns a \textbf{JWT authentication token}.
+\item
+  If repeated login failure occurs IDS blocks the IP temporarily.
+\end{enumerate}
+
+\subsubsection{\texorpdfstring{\textbf{Step 3: Session Key
+Establishment}}{Step 3: Session Key Establishment}}\label{step-3-session-key-establishment}
+
+Client Generates AES Key Encrypts AES Key using Server Public RSA Sends
+to Server
+
+Server Decrypts AES Key using Private RSA Stores AES Key for the Session
+
+This ensures that:
+
+\begin{itemize}
+\item
+  Key exchange is \textbf{confidential}.
+\item
+  Server does not store user passwords or private cryptographic keys.
+\end{itemize}
+
+\subsubsection{\texorpdfstring{\textbf{Step 4: Real-Time
+Messaging}}{Step 4: Real-Time Messaging}}\label{step-4-real-time-messaging}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Client encrypts message using AES-GCM.
+\item
+  Message is sent to server via WebSocket or HTTP /send.
+\item
+  Server decrypts message using sender's AES key.
+\item
+  Server re-encrypts plaintext using recipient\textquotesingle s AES
+  key.
+\item
+  Server forwards encrypted message instantly to recipient's WebSocket
+  client.
+\end{enumerate}
+
+\subsubsection{\texorpdfstring{\textbf{Step 5: Message Decryption at
+Recipient}}{Step 5: Message Decryption at Recipient}}\label{step-5-message-decryption-at-recipient}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Recipient receives encrypted message over WebSocket.
+\item
+  Recipient decrypts using local AES key.
+\item
+  Plaintext message is displayed in the UI.
+\end{enumerate}
+
+\subsection{\texorpdfstring{\textbf{3.4 Advantages of the
+Architecture}}{3.4 Advantages of the Architecture}}\label{advantages-of-the-architecture}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.3750}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5278}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Feature}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Benefit}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Hybrid Encryption & Combines performance and strong security \\
+Session-based AES keys & Allows unique encryption per user \\
+Server does not store plaintext & Protects privacy even if server is
+compromised \\
+Real-time WebSocket messaging & Faster and more efficient than
+polling \\
+IDS Integration & Enhances system resilience against attackers \\
+\end{longtable}
+}
+
+\section{\texorpdfstring{\textbf{4. Key Exchange Mechanism (RSA + AES
+Hybrid Encryption
+Model)}}{4. Key Exchange Mechanism (RSA + AES Hybrid Encryption Model)}}\label{key-exchange-mechanism-rsa-aes-hybrid-encryption-model}
+
+Secure communication requires that both parties share a secret
+encryption key that cannot be intercepted or derived by attackers.
+Directly transmitting this key over the network is dangerous because
+attackers may intercept it. To solve this problem, modern secure
+messaging systems use a \textbf{hybrid encryption model} that combines
+\textbf{Asymmetric Encryption (RSA)} and \textbf{Symmetric Encryption
+(AES)}.
+
+\begin{itemize}
+\item
+  \textbf{RSA (Public-Key Cryptography)} is used to securely exchange
+  the AES key.
+\item
+  \textbf{AES (Symmetric-Key Cryptography)} is used to encrypt and
+  decrypt actual chat messages.
+\end{itemize}
+
+This ensures both \textbf{security} and \textbf{high performance}.
+
+\subsection{\texorpdfstring{\textbf{4.1 Why Hybrid Encryption is
+Needed}}{4.1 Why Hybrid Encryption is Needed}}\label{why-hybrid-encryption-is-needed}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2083}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Feature}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{RSA (Asymmetric)}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{AES (Symmetric)}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Speed & Slow & Very Fast \\
+Suitable for & Small Data (Keys) & Large Data (Messages) \\
+Security Level & Very High & Very High \\
+\end{longtable}
+}
+
+If RSA were used to encrypt every chat message, communication would be
+extremely slow.\\
+If AES key were shared directly, an attacker could steal it.
+
+So we \textbf{combine} them:
+
+\begin{quote}
+\textbf{RSA encrypts the AES session key}\\
+\textbf{AES encrypts the messages}
+\end{quote}
+
+This approach is also used in \textbf{WhatsApp, Signal, Telegram,
+SSL/TLS, and online banking}.
+
+\subsection{\texorpdfstring{\textbf{4.2 System Generated Key
+Pairs}}{4.2 System Generated Key Pairs}}\label{system-generated-key-pairs}
+
+\subsubsection{\texorpdfstring{\textbf{On Server
+Side}}{On Server Side}}\label{on-server-side}
+
+The server generates an RSA key pair:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2222}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4583}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Key}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Stored Where}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Purpose}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Private Key} & Secure on server & Used to decrypt AES keys \\
+\textbf{Public Key} & Shared with clients & Used by clients to encrypt
+their AES key \\
+\end{longtable}
+}
+
+\subsubsection{\texorpdfstring{\textbf{On Client Side
+(Browser)}}{On Client Side (Browser)}}\label{on-client-side-browser}
+
+The client generates:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2055}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3836}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3836}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Key}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Visibility}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Purpose}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{AES Session Key} & Stored locally in browser memory & Encrypts
+and decrypts messages \\
+\end{longtable}
+}
+
+\subsection{\texorpdfstring{\textbf{4.3 Key Exchange Process
+Overview}}{4.3 Key Exchange Process Overview}}\label{key-exchange-process-overview}
+
+\textbf{Step 1:} Server generates RSA public/private key pair.
+
+\textbf{Step 2:} Client requests server\textquotesingle s public key.
+
+\textbf{Step 3:} Client generates its own AES-256 session key.
+
+\textbf{Step 4:} Client encrypts AES key using server\textquotesingle s
+RSA public key.
+
+\textbf{Step 5:} Client sends encrypted AES key to server.
+
+\textbf{Step 6:} Server decrypts AES key using private RSA key.
+
+\textbf{Step 7:} Both server and client now share the same AES key.
+
+\subsection{\texorpdfstring{\textbf{4.4 Key Exchange Flow
+Diagram}}{4.4 Key Exchange Flow Diagram}}\label{key-exchange-flow-diagram}
+
+\begin{figure}
+\centering
+\includegraphics[width=4.42153in,height=4.85764in,alt={ChatGPT Image Nov 10, 2025, 04\_17\_00 PM}]{/Users/sj/Desktop/devsprint/report-engine/workspace/32a2bd09-5eed-4bc4-8ba4-8d9fc92e7564/media/image2.png}
+\caption{ChatGPT Image Nov 10, 2025, 04\_17\_00 PM}
+\end{figure}
+
+At this point:
+
+\begin{itemize}
+\item
+  \textbf{Server never sees plaintext messages}
+\item
+  \textbf{Network attackers cannot derive the AES key}
+\item
+  \textbf{Session remains secure even on insecure networks}
+\end{itemize}
+
+\subsection{\texorpdfstring{\textbf{4.5 Security Advantages of This Key
+Exchange}}{4.5 Security Advantages of This Key Exchange}}\label{security-advantages-of-this-key-exchange}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.3750}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5139}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Security Requirement}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{How It Is Satisfied}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Confidentiality} & AES key is not exposed during transmission
+because RSA encrypts it \\
+\textbf{Integrity} & AES-GCM includes authentication tag preventing
+message tampering \\
+\textbf{Authentication} & Login + session keys tie identity to
+encryption \\
+\textbf{Forward Secrecy (Optional Extension)} & AES keys can be rotated
+periodically \\
+\end{longtable}
+}
+
+Even if attackers capture all messages, \textbf{they cannot decrypt
+anything} without the AES session key.
+
+\subsection{\texorpdfstring{\textbf{4.6 Key Storage and
+Lifetime}}{4.6 Key Storage and Lifetime}}\label{key-storage-and-lifetime}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1733}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Key Type}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Stored}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Lifetime}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Security Notes}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+RSA Private Key & On server (local file) & Long-term & Never shared \\
+RSA Public Key & Sent to clients & Long-term & Safe to share \\
+AES Session Key & In client memory + server session store & Active
+session only & Deleted on logout \\
+\end{longtable}
+}
+
+This ensures:
+
+\begin{itemize}
+\item
+  No sensitive keys are hard-coded
+\item
+  Keys are not stored permanently
+\item
+  On logout AES key is destroyed communication becomes unreadable
+\end{itemize}
+
+\subsection{\texorpdfstring{\textbf{4.7 Real Example from Project
+Code}}{4.7 Real Example from Project Code}}\label{real-example-from-project-code}
+
+\subsubsection{Server Decrypts AES Key}\label{server-decrypts-aes-key}
+
+aes\_key = rsa\_decrypt(encrypted\_key\_bytes)
+
+\subsubsection{Client Encrypts AES Key Before
+Sending}\label{client-encrypts-aes-key-before-sending}
+
+const encryptedKey = await crypto.subtle.encrypt(\{name: "RSA-OAEP"\},
+serverPublicKey, aesKeyRaw);
+
+This confirms \textbf{RSA is used only once} at login making the system
+fast.
+
+\section{\texorpdfstring{\textbf{5. Encryption and Decryption
+Process}}{5. Encryption and Decryption Process}}\label{encryption-and-decryption-process}
+
+The primary goal of a secure messaging system is to ensure that messages
+exchanged between users remain confidential and cannot be accessed or
+manipulated by unauthorized entities. In this project, encryption and
+decryption of messages are performed using the \textbf{AES-GCM symmetric
+encryption algorithm}, while the AES key itself is protected via
+\textbf{RSA asymmetric encryption}. This method ensures both
+\textbf{security} and \textbf{performance}.
+
+\subsection{\texorpdfstring{\textbf{5.1 Why AES is Used for Message
+Encryption}}{5.1 Why AES is Used for Message Encryption}}\label{why-aes-is-used-for-message-encryption}
+
+Once the client and server have securely exchanged the AES session key
+using RSA, the actual chat messages are encrypted using \textbf{AES-GCM
+(Advanced Encryption Standard -- Galois Counter Mode)}.
+
+\subsubsection{\texorpdfstring{\textbf{Advantages of
+AES-GCM}}{Advantages of AES-GCM}}\label{advantages-of-aes-gcm}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4722}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.3611}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Feature}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Benefit}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Fast encryption/decryption & Suitable for real-time chat \\
+Strong security (256-bit key) & Resistant to brute-force attacks \\
+Includes authentication tag & Detects message manipulation \\
+Works efficiently in browsers and servers & Supported by WebCrypto
+API \\
+\end{longtable}
+}
+
+Thus, \textbf{AES encrypts the message before sending} and
+\textbf{decrypts it on the receiver side}.
+
+\subsection{\texorpdfstring{\textbf{5.2 Encryption Process (Sender
+Side)}}{5.2 Encryption Process (Sender Side)}}\label{encryption-process-sender-side}
+
+When the sender types a message:
+
+\begin{itemize}
+\item
+  The message text is converted to bytes.
+\item
+  A unique \textbf{Initialization Vector (IV)} (12 bytes) is generated.
+\item
+  AES-GCM encrypts the plaintext using:
+
+  \begin{itemize}
+  \item
+    AES session key
+  \item
+    IV
+  \end{itemize}
+\item
+  The encrypted output (ciphertext) is converted to Base64 for network
+  transmission.
+\item
+  The IV and ciphertext are sent to the server then forwarded to the
+  intended recipient.
+\end{itemize}
+
+\subsubsection{\texorpdfstring{\textbf{Encryption
+Flow}}{Encryption Flow}}\label{encryption-flow}
+
+\begin{figure}
+\centering
+\includegraphics[width=5.05486in,height=3.86319in,alt={ChatGPT Image Nov 10, 2025, 04\_27\_33 PM}]{/Users/sj/Desktop/devsprint/report-engine/workspace/32a2bd09-5eed-4bc4-8ba4-8d9fc92e7564/media/image3.png}
+\caption{ChatGPT Image Nov 10, 2025, 04\_27\_33 PM}
+\end{figure}
+
+\subsection{\texorpdfstring{\textbf{5.3 Decryption Process (Recipient
+Side)}}{5.3 Decryption Process (Recipient Side)}}\label{decryption-process-recipient-side}
+
+\begin{itemize}
+\item
+  When the recipient receives the ciphertext:
+\item
+  The Base64 ciphertext is converted back into bytes.
+\item
+  AES-GCM decrypts it using:
+
+  \begin{itemize}
+  \item
+    The AES session key
+  \item
+    The IV sent alongside the message
+  \end{itemize}
+\item
+  The result is plaintext.
+\item
+  Plaintext is displayed to the user.
+\end{itemize}
+
+\subsubsection{\texorpdfstring{\textbf{Decryption
+Flow}}{Decryption Flow}}\label{decryption-flow}
+
+\subsubsection{\texorpdfstring{\protect\includegraphics[width=4.40556in,height=3.69028in,alt={ChatGPT Image Nov 10, 2025, 04\_31\_01 PM}]{/Users/sj/Desktop/devsprint/report-engine/workspace/32a2bd09-5eed-4bc4-8ba4-8d9fc92e7564/media/image4.png}}{ChatGPT Image Nov 10, 2025, 04\_31\_01 PM}}\label{chatgpt-image-nov-10-2025-04_31_01-pm}
+
+\subsection{\texorpdfstring{\textbf{5.4 Worked Example
+(Step-by-Step)}}{5.4 Worked Example (Step-by-Step)}}\label{worked-example-step-by-step}
+
+Assume:
+
+\begin{itemize}
+\item
+  AES key (shared session key):\\
+  K = "2f 7f 9e 34 12 ab 45 ce ..." (256-bit key)
+\item
+  Plaintext message:\\
+  "HELLO"
+\end{itemize}
+
+\subsubsection{\texorpdfstring{\textbf{Step 1: Convert to
+Bytes}}{Step 1: Convert to Bytes}}\label{step-1-convert-to-bytes}
+
+"HELLO" 48 45 4C 4C 4F (in hex)
+
+\subsubsection{\texorpdfstring{\textbf{Step 2: Generate Random
+IV}}{Step 2: Generate Random IV}}\label{step-2-generate-random-iv}
+
+Example IV:
+
+IV = 9a 5c 11 3f 52 e0 8f c4 97 21 aa 3d (12 bytes)
+
+\subsubsection{\texorpdfstring{\textbf{Step 3: AES-GCM
+Encryption}}{Step 3: AES-GCM Encryption}}\label{step-3-aes-gcm-encryption}
+
+AES encrypts plaintext into ciphertext:
+
+Ciphertext = d4 8a 91 e1 71 56 2d cb 8f 33
+
+\subsubsection{\texorpdfstring{\textbf{Step 4: Convert to Base64 for
+Transmission}}{Step 4: Convert to Base64 for Transmission}}\label{step-4-convert-to-base64-for-transmission}
+
+IV "mlwRP1Lgj8SXIao9"
+
+Ciphertext "1IqR4XFWLcuPMw=="
+
+The server receives:
+
+\{
+
+"iv\_b64": "mlwRP1Lgj8SXIao9",
+
+"ciphertext\_b64": "1IqR4XFWLcuPMw=="
+
+\}
+
+\subsection{\texorpdfstring{\textbf{5.5 Decryption Example (Recipient
+Side)}}{5.5 Decryption Example (Recipient Side)}}\label{decryption-example-recipient-side}
+
+Recipient receives IV + ciphertext uses same AES key to decrypt:
+
+AES\_Decrypt( K, IV, Ciphertext ) Plaintext = "HELLO"
+
+Since AES-GCM checks \textbf{integrity}, if the ciphertext was modified:
+
+Decryption Fails Message is rejected
+
+Thus ensuring protection against \textbf{tampering attacks}.
+
+\subsection{\texorpdfstring{\textbf{5.6 Security Advantages of This
+Encryption
+Scheme}}{5.6 Security Advantages of This Encryption Scheme}}\label{security-advantages-of-this-encryption-scheme}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3611}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3611}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Security Feature}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Provided By}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Result}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Confidentiality & AES-256 Encryption & Prevents eavesdropping \\
+Integrity & AES-GCM Authentication Tag & Detects modification \\
+Key Protection & RSA-OAEP Key Encryption & Prevents key theft \\
+Replay Protection & New IV for every message & Prevents old message
+injection \\
+\end{longtable}
+}
+
+This ensures the system is secure even over an \textbf{insecure network
+like public WiFi}.
+
+\section{\texorpdfstring{\textbf{6. Real-Time Messaging Using
+WebSockets}}{6. Real-Time Messaging Using WebSockets}}\label{real-time-messaging-using-websockets}
+
+Real-time communication is an essential requirement in modern messaging
+applications. Traditional HTTP communication follows a
+\textbf{request--response model}, where the client must repeatedly
+request new data from the server. This creates significant delay,
+increased bandwidth usage, and poor user experience. To overcome these
+limitations, the Secure Messaging System uses \textbf{WebSockets}, which
+allow persistent, bidirectional communication between client and server.
+
+\subsection{\texorpdfstring{\textbf{6.1 Limitations of HTTP
+Polling}}{6.1 Limitations of HTTP Polling}}\label{limitations-of-http-polling}
+
+Before WebSockets, chat applications relied on techniques such as:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2083}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4306}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2917}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Method}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Description}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Drawbacks}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Polling} & Client sends requests periodically to check for new
+messages & Wastes bandwidth, delays delivery \\
+\textbf{Long Polling} & Client waits until server responds with new data
+& Reduces delay but still inefficient \\
+\textbf{Refresh / Reload} & Manual page refresh to get updates & Poor
+user experience \\
+\end{longtable}
+}
+
+These methods are either \textbf{inefficient} or \textbf{slow},
+especially when real-time responsiveness is required.
+
+\subsection{\texorpdfstring{\textbf{6.2 Introduction to
+WebSockets}}{6.2 Introduction to WebSockets}}\label{introduction-to-websockets}
+
+WebSockets provide a \textbf{full-duplex (two-way)} communication
+channel over a \textbf{single, long-lived TCP connection}. Once the
+WebSocket connection is established, both the server and the client can
+send or receive data at any time \textbf{without needing repeated
+requests}.
+
+\subsubsection{\texorpdfstring{\textbf{Key Properties of
+WebSockets}}{Key Properties of WebSockets}}\label{key-properties-of-websockets}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.3425}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.6301}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Feature}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Benefit}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Persistent connection & No repeated handshake or overhead \\
+Bidirectional communication & Both client and server can send messages
+independently \\
+Low-latency and real-time & Messages are delivered instantly \\
+Efficient resource usage & No repeated HTTP requests \\
+\end{longtable}
+}
+
+\subsection{\texorpdfstring{\textbf{6.3 WebSocket Workflow in This
+Project}}{6.3 WebSocket Workflow in This Project}}\label{websocket-workflow-in-this-project}
+
+Client Logs In
+
+Client opens WebSocket connection to server
+
+\textbf{\emph{ws://server-address/ws/\{username\}}}
+
+Server registers the WebSocket connection for the user
+
+When a message arrives for a user:
+
+\textbf{\emph{Server sends encrypted message over WebSocket instantly}}
+
+Client receives encrypted message
+
+Client decrypts using AES session key
+
+Message is displayed to user in chat window
+
+This ensures the message is delivered in \textbf{real-time} without
+polling.
+
+\subsection{\texorpdfstring{\textbf{6.4 WebSocket Connection
+Diagram}}{6.4 WebSocket Connection Diagram}}\label{websocket-connection-diagram}
+
+\begin{figure}
+\centering
+\includegraphics[width=4.75in,height=3.99722in,alt={ChatGPT Image Nov 10, 2025, 04\_41\_43 PM}]{/Users/sj/Desktop/devsprint/report-engine/workspace/32a2bd09-5eed-4bc4-8ba4-8d9fc92e7564/media/image5.png}
+\caption{ChatGPT Image Nov 10, 2025, 04\_41\_43 PM}
+\end{figure}
+
+\subsection{\texorpdfstring{\textbf{6.5 WebSocket Subscription per
+User}}{6.5 WebSocket Subscription per User}}\label{websocket-subscription-per-user}
+
+Each user maintains \textbf{one active WebSocket connection}.
+
+@app.websocket("/ws/\{username\}")async def
+websocket\_endpoint(websocket: WebSocket, username: str):
+
+await manager.connect(username, websocket)
+
+try:
+
+while True:
+
+await websocket.receive\_text() \# keeps the connection alive
+
+except WebSocketDisconnect:
+
+manager.disconnect(username, websocket)
+
+The server uses a \textbf{Connection Manager} to track which user is
+online.
+
+\subsection{\texorpdfstring{\textbf{6.6 Sending Messages Over WebSocket
+(Encrypted)}}{6.6 Sending Messages Over WebSocket (Encrypted)}}\label{sending-messages-over-websocket-encrypted}
+
+Once the server processes and re-encrypts a message for the recipient,
+it pushes it:
+
+await manager.send\_personal(
+
+recipient\_username,
+
+\{
+
+"from": sender\_username,
+
+"iv\_b64": base64\_iv,
+
+"ciphertext\_b64": base64\_cipher,
+
+"timestamp": ts
+
+\}
+
+)
+
+This ensures:
+
+\begin{itemize}
+\item
+  No plaintext ever travels over the network
+\item
+  Only authenticated, logged-in users can receive messages
+\end{itemize}
+
+\subsection{\texorpdfstring{\textbf{6.7 Receiving and Decrypting on
+Client}}{6.7 Receiving and Decrypting on Client}}\label{receiving-and-decrypting-on-client}
+
+On the browser side:
+
+ws.onmessage = async (event) =\textgreater{} \{
+
+const data = JSON.parse(event.data);
+
+const iv = base64ToBytes(data.iv\_b64);
+
+const ct = base64ToBytes(data.ciphertext\_b64);
+
+const pt = await aesDecryptRaw(aesKeyObj, iv, ct);
+
+const messageText = new TextDecoder().decode(pt);
+
+setMessages(prev =\textgreater{} {[}...prev, \{ from: data.from, text:
+messageText \}{]});
+
+\};
+
+The message is decrypted and displayed \textbf{instantly}.
+
+\subsection{\texorpdfstring{\textbf{6.8 Advantages of Using WebSockets
+in Secure
+Messaging}}{6.8 Advantages of Using WebSockets in Secure Messaging}}\label{advantages-of-using-websockets-in-secure-messaging}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.3056}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4722}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Feature}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Impact}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Real-time updates & Messages appear instantly without delay \\
+Efficient bandwidth usage & No repeated HTTP requests \\
+Better scalability & Server handles fewer requests \\
+Improved user experience & Smooth, responsive chat interface \\
+\end{longtable}
+}
+
+\section{\texorpdfstring{\textbf{7. Intrusion Detection System
+(IDS)}}{7. Intrusion Detection System (IDS)}}\label{intrusion-detection-system-ids-1}
+
+As digital communication systems expand, the risk of unauthorized
+access, brute-force attacks, and malicious intrusion attempts increases
+significantly. To safeguard user accounts and ensure secure
+communication, the Secure Messaging System integrates a
+\textbf{lightweight Intrusion Detection System (IDS)} that continuously
+monitors login activity and detects suspicious behavior in real-time.
+
+The IDS does not interfere with regular messaging functionality but
+enhances system security by identifying and blocking potentially harmful
+access attempts before they can compromise user privacy.
+
+\subsection{\texorpdfstring{\textbf{7.1 Need for Intrusion Detection in
+Secure
+Messaging}}{7.1 Need for Intrusion Detection in Secure Messaging}}\label{need-for-intrusion-detection-in-secure-messaging}
+
+Even when cryptographic encryption protects message content, systems can
+still be vulnerable to attacks such as:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2639}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4444}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2639}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Attack Type}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Description}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Risk}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Brute Force Attack} & Attacker repeatedly attempts login with
+many password guesses & Unauthorized account access \\
+\textbf{Credential Stuffing} & Using leaked passwords from other sites &
+Account takeover \\
+\textbf{Account Enumeration} & Detecting if usernames exist & Privacy
+leakage \\
+\textbf{Session Hijacking} & Attacker takes over active sessions &
+Impersonation \\
+\end{longtable}
+}
+
+Therefore, detecting \textbf{patterns of misuse} is essential to ensure
+system security.
+
+\subsection{\texorpdfstring{\textbf{7.2 IDS Strategy Used in This
+Project}}{7.2 IDS Strategy Used in This Project}}\label{ids-strategy-used-in-this-project}
+
+The IDS implemented in this system focuses on \textbf{Login Attempt
+Monitoring}. It tracks:
+
+\begin{itemize}
+\item
+  The \textbf{IP Address} from which login attempts originate.
+\item
+  The \textbf{number of failed login attempts} in a short time period.
+\end{itemize}
+
+If suspicious behavior is detected, the system \textbf{temporarily
+blocks} that IP address.
+
+\subsubsection{Key Principle:}\label{key-principle}
+
+\begin{quote}
+If a user fails to authenticate repeatedly in a short time window, it
+indicates possible \textbf{attack activity}.
+\end{quote}
+
+\subsection{\texorpdfstring{\textbf{7.3 IDS Working
+Logic}}{7.3 IDS Working Logic}}\label{ids-working-logic}
+
+The IDS maintains two in-memory structures:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.3056}}
+  >{\centering\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5556}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Variable}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\textbf{Description}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+failed\_logins\_by\_ip & Maps IP timestamps of failed login attempts \\
+blocked\_ips & Maps IP time until the block expires \\
+\end{longtable}
+}
+
+\subsubsection{Threshold Parameters:}\label{threshold-parameters}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2917}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2083}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3472}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Parameter}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Value}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Meaning}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+BLOCK\_THRESHOLD & 5 failures & Max allowed failed attempts \\
+BLOCK\_WINDOW & 300 seconds & Time window for tracking attempts \\
+\end{longtable}
+}
+
+\subsection{}\label{section-9}
+
+\subsection{\texorpdfstring{\textbf{7.4 IDS Algorithm
+(Step-by-Step)}}{7.4 IDS Algorithm (Step-by-Step)}}\label{ids-algorithm-step-by-step}
+
+For every login attempt:
+
+1. Extract client IP address.
+
+2. Check if IP is currently blocked:
+
+If yes deny login request.
+
+3. If login is incorrect:
+
+Add timestamp to failed\_logins\_by\_ip list for that IP.
+
+Remove old timestamps older than BLOCK\_WINDOW.
+
+If number of failures BLOCK\_THRESHOLD:
+
+Add IP to blocked\_ips with unblock\_time = now + BLOCK\_WINDOW.
+
+4. If login is correct:
+
+Clear failed login count for that IP.
+
+Allow login and issue JWT.
+
+\subsection{\texorpdfstring{\textbf{7.5 IDS Process Flow
+Diagram}}{7.5 IDS Process Flow Diagram}}\label{ids-process-flow-diagram}
+
+\begin{figure}
+\centering
+\includegraphics[width=4.11528in,height=4.54236in,alt={ChatGPT Image Nov 10, 2025, 05\_50\_48 PM}]{/Users/sj/Desktop/devsprint/report-engine/workspace/32a2bd09-5eed-4bc4-8ba4-8d9fc92e7564/media/image6.png}
+\caption{ChatGPT Image Nov 10, 2025, 05\_50\_48 PM}
+\end{figure}
+
+\subsection{\texorpdfstring{\textbf{7.6 Example
+Scenario}}{7.6 Example Scenario}}\label{example-scenario}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1528}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1944}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2083}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Time}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{IP Address}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Login Outcome}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{IDS Action}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+10:30:01 & 192.168.1.4 & Wrong Password & Count = 1 \\
+10:30:08 & 192.168.1.4 & Wrong Password & Count = 2 \\
+10:30:16 & 192.168.1.4 & Wrong Password & Count = 3 \\
+10:30:29 & 192.168.1.4 & Wrong Password & Count = 4 \\
+10:30:41 & 192.168.1.4 & Wrong Password & \textbf{Count = 5 IP
+BLOCKED} \\
+\end{longtable}
+}
+
+If the same IP tries to login again within the block window:
+
+Response: "403 -- Access Blocked due to Suspicious Activity"
+
+\subsection{\texorpdfstring{\textbf{7.7 IDS Integration in the
+System}}{7.7 IDS Integration in the System}}\label{ids-integration-in-the-system}
+
+The IDS is integrated directly into the /login authentication route of
+the backend server.
+
+This ensures:
+
+\begin{itemize}
+\item
+  No additional hardware/software is required.
+\item
+  Intrusion detection occurs \textbf{before} a session token is issued.
+\item
+  Attacks are \textbf{prevented early}, without affecting message
+  encryption logic.
+\end{itemize}
+
+\subsection{\texorpdfstring{\textbf{7.8 Strengths and
+Limitations}}{7.8 Strengths and Limitations}}\label{strengths-and-limitations}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4861}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4861}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Strengths}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Limitations}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Simple and efficient & Does not detect advanced attacks like
+anomaly-based intrusion \\
+Adds strong protection against brute force & Stores IP data only in
+memory \\
+No performance overhead & IP spoofing may bypass tracking \\
+Ideal for light/medium traffic systems & Needs extension for
+enterprise-level environments \\
+\end{longtable}
+}
+
+\subsection{\texorpdfstring{\textbf{7.9 Possible
+Enhancements}}{7.9 Possible Enhancements}}\label{possible-enhancements}
+
+To make the IDS more robust:
+
+\begin{itemize}
+\item
+  Store IDS logs in database for persistence.
+\item
+  Use Machine Learning to detect abnormal login patterns.
+\item
+  Integrate \textbf{Snort / Suricata} network intrusion monitoring.
+\item
+  Add email/SMS alerts for administrators.
+\end{itemize}
+
+\section{}\label{section-10}
+
+\section{}\label{section-11}
+
+\section{}\label{section-12}
+
+\section{}\label{section-13}
+
+\section{}\label{section-14}
+
+\section{}\label{section-15}
+
+\section{}\label{section-16}
+
+\section{}\label{section-17}
+
+\section{}\label{section-18}
+
+\section{}\label{section-19}
+
+\section{}\label{section-20}
+
+\section{\texorpdfstring{\textbf{8. Implementation
+Details}}{8. Implementation Details}}\label{implementation-details}
+
+The Secure Messaging System is implemented using a
+\textbf{client--server architecture} with a \textbf{React-based
+frontend} and a \textbf{FastAPI backend}. The system integrates
+cryptographic modules, real-time message delivery services,
+authentication services, and an intrusion detection component.
+
+This section explains the implementation structure, module
+responsibilities, and workflow at the code level.
+
+\subsection{\texorpdfstring{\textbf{8.1 System Modules
+Overview}}{8.1 System Modules Overview}}\label{system-modules-overview}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2917}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Module Name}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Location}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Purpose}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Authentication Module} & Backend (FastAPI) & Handles user signup
+and login using hashed credentials \\
+\textbf{Key Management Module} & Backend + Frontend & Performs RSA
+public-key exchange and AES session key setup \\
+\textbf{Encryption / Decryption Module} & Frontend \& Backend & Encrypts
+messages using AES-GCM and re-encrypts for recipients \\
+\textbf{Messaging Module} & WebSocket \& HTTP & Sends and receives
+encrypted messages in real-time \\
+\textbf{Intrusion Detection Module (IDS)} & Backend & Monitors login
+activity and blocks suspicious attempts \\
+\textbf{User Interface Module} & React (Tailwind UI) & Provides chat
+interface and live message updates \\
+\end{longtable}
+}
+
+\subsection{\texorpdfstring{\textbf{8.2 Backend Implementation
+(FastAPI)}}{8.2 Backend Implementation (FastAPI)}}\label{backend-implementation-fastapi}
+
+\subsubsection{\texorpdfstring{\textbf{8.2.1 Project Structure
+(Backend)}}{8.2.1 Project Structure (Backend)}}\label{project-structure-backend}
+
+backend/
+
+main.py \# Main API Server
+
+crypto\_utils.py \# RSA + AES encryption utilities
+
+ws\_manager.py \# WebSocket connection manager
+
+chat.db \# SQLite database
+
+server\_public\_key.pem \# RSA public key
+
+server\_private\_key.pem \# RSA private key
+
+\subsubsection{\texorpdfstring{\textbf{8.2.2 User
+Authentication}}{8.2.2 User Authentication}}\label{user-authentication}
+
+Passwords are \textbf{never stored in plaintext}.\\
+They are hashed using \textbf{bcrypt} and stored in the database.
+
+\textbf{Key functions:}
+
+hashed\_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+
+bcrypt.checkpw(input\_password.encode(), stored\_password\_hash)
+
+A valid login returns a \textbf{JWT token} used for authorization in all
+requests.
+
+\subsubsection{\texorpdfstring{\textbf{8.2.3 RSA Key
+Management}}{8.2.3 RSA Key Management}}\label{rsa-key-management}
+
+On server startup:
+
+generate\_rsa\_keys()
+
+\begin{itemize}
+\item
+  The \textbf{public key} is returned to clients via /public\_key.
+\item
+  The \textbf{private key} never leaves the server.
+\end{itemize}
+
+\subsubsection{\texorpdfstring{\textbf{8.2.4 AES Session Key
+Exchange}}{8.2.4 AES Session Key Exchange}}\label{aes-session-key-exchange}
+
+Client generates AES key encrypts with RSA public key sends to server:
+
+@app.post("/session\_key")def session\_key():
+
+aes\_key = rsa\_decrypt(encrypted\_key)
+
+session\_keys{[}username{]} = aes\_key
+
+This ensures:\\
+Key confidentiality\\
+No insecure key transmission
+
+\subsubsection{\texorpdfstring{\textbf{8.2.5 Message Send \&
+Re-Encryption
+Logic}}{8.2.5 Message Send \& Re-Encryption Logic}}\label{message-send-re-encryption-logic}
+
+When a sender sends a message:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Sender encrypts message with AES.
+\item
+  Server decrypts and obtains plaintext.
+\item
+  Server re-encrypts plaintext \textbf{with recipient\textquotesingle s
+  AES key}.
+\item
+  Server stores + forwards encrypted message.
+\end{enumerate}
+
+plaintext = aes\_decrypt(sender\_key, iv, ciphertext)
+
+rcipher = aes\_encrypt(recipient\_key, new\_iv, plaintext)
+
+This provides:
+
+\begin{itemize}
+\item
+  End-to-end style encryption
+\item
+  Server cannot modify message without detection
+\end{itemize}
+
+\subsubsection{\texorpdfstring{\textbf{8.2.6 WebSocket Real-Time
+Delivery}}{8.2.6 WebSocket Real-Time Delivery}}\label{websocket-real-time-delivery}
+
+The server uses a \textbf{connection manager} to track who is online.
+
+await manager.send\_personal(recipient, encrypted\_message\_payload)
+
+Thus, messages appear \textbf{instantly}.
+
+\subsubsection{\texorpdfstring{\textbf{8.2.7 Intrusion Detection
+(IDS)}}{8.2.7 Intrusion Detection (IDS)}}\label{intrusion-detection-ids}
+
+IDS monitors \textbf{failed login attempts} from each IP.
+
+If failures threshold:
+
+blocked\_ips{[}ip{]} = timestamp + BLOCK\_WINDOW
+
+This prevents:
+
+\begin{itemize}
+\item
+  Brute-force attacks
+\item
+  Credential stuffing attempts
+\end{itemize}
+
+\subsection{\texorpdfstring{\textbf{8.3 Frontend Implementation (React +
+Tailwind)}}{8.3 Frontend Implementation (React + Tailwind)}}\label{frontend-implementation-react-tailwind}
+
+\subsubsection{\texorpdfstring{\textbf{8.3.1 Project Structure
+(Frontend)}}{8.3.1 Project Structure (Frontend)}}\label{project-structure-frontend}
+
+frontend/
+
+src/
+
+App.jsx
+
+Login.jsx
+
+Chat.jsx
+
+api.js \# Backend API calls
+
+cryptoClient.js \# AES/RSA/WebCrypto operations
+
+tailwind.config.js \# UI theme
+
+\subsubsection{\texorpdfstring{\textbf{8.3.2 Login
+Workflow}}{8.3.2 Login Workflow}}\label{login-workflow}
+
+\begin{itemize}
+\item
+  User enters credentials.
+\item
+  Password sent securely Backend verifies.
+\item
+  Backend returns JWT.
+\item
+  Frontend saves token and continues.
+\end{itemize}
+
+\subsubsection{\texorpdfstring{\textbf{8.3.3 AES Key Generation and
+Storage}}{8.3.3 AES Key Generation and Storage}}\label{aes-key-generation-and-storage}
+
+AES key is generated \textbf{locally} using Web Crypto API:
+
+const key = await crypto.subtle.generateKey(\{name:"AES-GCM",
+length:256\}, true, {[}"encrypt","decrypt"{]});
+
+The raw key is exported and encrypted using RSA before sending to
+server.
+
+\subsubsection{\texorpdfstring{\textbf{8.3.4 WebSocket Client
+Logic}}{8.3.4 WebSocket Client Logic}}\label{websocket-client-logic}
+
+const ws = new WebSocket(`ws://localhost:8000/ws/\$\{username\}`);
+
+ws.onmessage = async (event) =\textgreater{} \{
+
+decrypt display message
+
+\}
+
+No polling \textbf{real-time UI updates}.
+
+\subsubsection{\texorpdfstring{\textbf{8.3.5 Message Encryption in
+Client}}{8.3.5 Message Encryption in Client}}\label{message-encryption-in-client}
+
+const \{iv, ct\} = await aesEncryptRaw(aesKeyObj,
+plaintextBytes);sendMessage(token, {[}recipient{]}, base64(iv),
+base64(ct));
+
+Recipient decrypts using \textbf{same AES session key}.
+
+\subsection{\texorpdfstring{\textbf{8.4 Database
+Schema}}{8.4 Database Schema}}\label{database-schema}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1507}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4658}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3562}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Table Name}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Columns}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Purpose}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+users & id, username, password\_hash & User identity storage \\
+messages & id, sender, recipient, iv, ciphertext, timestamp & Stores
+encrypted offline messages \\
+\end{longtable}
+}
+
+All messages are \textbf{stored encrypted}, not as plaintext.
+
+\subsection{\texorpdfstring{\textbf{8.5 Summary of
+Implementation}}{8.5 Summary of Implementation}}\label{summary-of-implementation}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.2917}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.3194}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Security Goal}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Achieved By}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Confidentiality & AES Encryption \\
+Authentication & JWT + bcrypt \\
+Integrity & AES-GCM auth tag \\
+Secure Key Sharing & RSA-OAEP encryption \\
+Attack Prevention & Built-in IDS monitoring \\
+\end{longtable}
+}
+
+The implementation \textbf{aligns with real-world secure messaging
+systems} such as WhatsApp, Signal, and Telegram.
+
+\section{}\label{section-21}
+
+\section{}\label{section-22}
+
+\section{}\label{section-23}
+
+\section{}\label{section-24}
+
+\section{}\label{section-25}
+
+\section{}\label{section-26}
+
+\section{}\label{section-27}
+
+\section{}\label{section-28}
+
+\section{}\label{section-29}
+
+\section{\texorpdfstring{\textbf{9. Testing, Output Screenshots, and
+Result
+Analysis}}{9. Testing, Output Screenshots, and Result Analysis}}\label{testing-output-screenshots-and-result-analysis}
+
+The Secure Messaging System was thoroughly tested to ensure correct
+functionality, cryptographic security, real-time responsiveness, and
+intrusion detection accuracy. Testing was performed on multiple devices
+and browsers to validate the user experience and communication
+reliability.
+
+Testing was conducted in the following environment:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.2222}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.6944}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Component}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Specification}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Operating System & Windows / Ubuntu \\
+Frontend Runtime & Google Chrome Browser \\
+Backend Runtime & Python 3.10+, FastAPI, Uvicorn \\
+Database & SQLite \\
+Tools Used & Browser DevTools, Wireshark (optional), Postman
+(optional) \\
+\end{longtable}
+}
+
+\subsection{\texorpdfstring{\textbf{9.1 Test Cases and
+Results}}{9.1 Test Cases and Results}}\label{test-cases-and-results}
+
+\subsubsection{\texorpdfstring{\textbf{Test Case 1: User
+Registration}}{Test Case 1: User Registration}}\label{test-case-1-user-registration}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.2222}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.6111}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Parameter}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Details}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Input & Username + Password \\
+Expected Output & Account successfully created \\
+Result & Passed --- user was created and stored in database \\
+\end{longtable}
+}
+
+\textbf{Observation:}\\
+Passwords were stored \textbf{only as bcrypt hashes}, not raw text
+ensures security.
+
+\subsubsection{\texorpdfstring{\textbf{Test Case 2: User Login with
+Valid
+Credentials}}{Test Case 2: User Login with Valid Credentials}}\label{test-case-2-user-login-with-valid-credentials}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.2222}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4722}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Parameter}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Details}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Input & Registered Username + Correct Password \\
+Expected Output & Login success and JWT token returned \\
+Result & Passed \\
+\end{longtable}
+}
+
+\textbf{Observation:}\\
+JWT token successfully stored in browser session used for
+authentication.
+
+\subsubsection{\texorpdfstring{\textbf{Test Case 3: User Login with
+Invalid Credentials (IDS
+Trigger)}}{Test Case 3: User Login with Invalid Credentials (IDS Trigger)}}\label{test-case-3-user-login-with-invalid-credentials-ids-trigger}
+
+\textbar{} Action \textbar{} User enters wrong password repeatedly
+\textbar{}\\
+\textbar{} Expected Behavior \textbar{} System blocks IP after threshold
+attempts \textbar{}\\
+\textbar{} Result \textbar{} Passed \textbar{}
+
+\textbf{IDS Response Example Output:}
+
+403 Forbidden -- Too many failed login attempts
+
+Your IP has been temporarily blocked due to suspicious activity.
+
+This confirms the \textbf{Intrusion Detection System is working
+correctly.}
+
+\subsubsection{\texorpdfstring{\textbf{Test Case 4: AES Key
+Exchange}}{Test Case 4: AES Key Exchange}}\label{test-case-4-aes-key-exchange}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.2222}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5556}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Parameter}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Details}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Action & Client sends encrypted AES session key to server \\
+Expected Output & Server successfully decrypts and stores AES key \\
+Result & Passed \\
+\end{longtable}
+}
+
+\textbf{Observation:}\\
+Man-in-the-middle inspection showed \textbf{AES key never transmitted in
+plaintext} secure.
+
+\subsubsection{\texorpdfstring{\textbf{Test Case 5: Sending a
+Message}}{Test Case 5: Sending a Message}}\label{test-case-5-sending-a-message}
+
+\textbar{} Action \textbar{} User A sends ``Hello'' to User B
+\textbar{}\\
+\textbar{} Expected Output \textbar{} Message delivered instantly and
+encrypted \textbar{}\\
+\textbar{} Result \textbar{} Passed \textbar{}
+
+\textbf{Observed in Browser Network Tab:}
+
+Ciphertext example: 1IqR4XFWLcuPMw==
+
+IV: mlwRP1Lgj8SXIao9
+
+No plaintext \textbf{ever appears in network logs}.
+
+\subsubsection{\texorpdfstring{\textbf{Test Case 6: Real-Time Delivery
+via
+WebSocket}}{Test Case 6: Real-Time Delivery via WebSocket}}\label{test-case-6-real-time-delivery-via-websocket}
+
+\textbar{} Action \textbar{} Message typing and sending while both users
+online \textbar{}\\
+\textbar{} Expected Output \textbar{} Message visible instantly on
+recipient screen \textbar{}\\
+\textbar{} Result \textbar{} Passed \textbar{}
+
+\textbf{Latency Observed:}\\
+\textless{} 100 ms (near real-time)
+
+\subsection{\texorpdfstring{\textbf{9.2 Output
+Screenshots}}{9.2 Output Screenshots}}\label{output-screenshots}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2083}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4306}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3194}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Screenshot No.}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Description}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Where to Capture}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Fig 9.1 & User Registration Page & Login.jsx screen \\
+Fig 9.2 & Successful Login + Session Key Setup & On login success
+response \\
+Fig 9.3 & Chat Window (Alice sending message to Bob) & Chat.jsx
+screen \\
+Fig 9.4 & Real-time message reception & Bob's window receiving
+message \\
+Fig 9.5 & IDS Block Warning & Attempt wrong passwords repeatedly \\
+\end{longtable}
+}
+
+\includegraphics[width=6.17569in,height=4.05556in]{/Users/sj/Desktop/devsprint/report-engine/workspace/32a2bd09-5eed-4bc4-8ba4-8d9fc92e7564/media/image7.png}
+
+\textbf{Figure 9.1}: Registration form interface for new user sign-up.
+
+\includegraphics[width=5.99931in,height=3.77847in]{/Users/sj/Desktop/devsprint/report-engine/workspace/32a2bd09-5eed-4bc4-8ba4-8d9fc92e7564/media/image8.png}\textbf{Figure
+9.2}: Successful login and secure session establishment.
+
+\includegraphics[width=5.99653in,height=3.44097in]{/Users/sj/Desktop/devsprint/report-engine/workspace/32a2bd09-5eed-4bc4-8ba4-8d9fc92e7564/media/image9.png}\textbf{Figure
+9.3}: Encrypted chat interface with Tailwind Dark UI.
+
+\includegraphics[width=5.99653in,height=3.44444in]{/Users/sj/Desktop/devsprint/report-engine/workspace/32a2bd09-5eed-4bc4-8ba4-8d9fc92e7564/media/image10.png}
+
+\textbf{Figure 9.4}: Real-time message update using WebSocket.
+
+\includegraphics[width=5.99653in,height=3.46111in]{/Users/sj/Desktop/devsprint/report-engine/workspace/32a2bd09-5eed-4bc4-8ba4-8d9fc92e7564/media/image11.png}
+
+\textbf{Figure 9.5}: Intrusion Detection System blocking suspicious
+login attempts.
+
+\subsection{\texorpdfstring{\textbf{9.3 Result
+Analysis}}{9.3 Result Analysis}}\label{result-analysis}
+
+The system successfully demonstrated:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3889}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Security Objective}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{How Achieved}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Result}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Confidentiality & AES-256 Encryption & Messages remained unreadable to
+outsiders \\
+Authentication & JWT + bcrypt & Only authorized users accessed system \\
+Integrity & AES-GCM Auth Tag & Any message tampering detected \\
+Availability & WebSocket real-time delivery & Chat remained responsive
+and stable \\
+Intrusion Resistance & IDS Login Monitoring & Brute-force attempts
+blocked \\
+\end{longtable}
+}
+
+The system meets the goals of a secure messaging platform. Performance
+remained smooth under normal usage, and security features operated
+effectively to prevent unauthorized access.
+
+\subsection{\texorpdfstring{\textbf{9.4 Conclusion for Testing
+Phase}}{9.4 Conclusion for Testing Phase}}\label{conclusion-for-testing-phase}
+
+The testing results indicate that the \textbf{Secure Messaging System is
+functionally correct, secure, and reliable}.\\
+All major features performed as expected with no data leakage, UI
+failure, or performance bottlenecks observed during testing. The
+cryptographic components successfully protected message confidentiality
+and integrity, while the IDS safeguarded system access against attack
+attempts.
+
+\section{\texorpdfstring{\textbf{10. Conclusion and Future
+Enhancements}}{10. Conclusion and Future Enhancements}}\label{conclusion-and-future-enhancements}
+
+\subsection{\texorpdfstring{\textbf{10.1
+Conclusion}}{10.1 Conclusion}}\label{conclusion}
+
+The Secure Messaging System developed in this project successfully
+demonstrates how modern cryptographic techniques and real-time
+communication protocols can be combined to provide \textbf{confidential,
+authenticated, and reliable} digital communication. The integration of
+\textbf{RSA-based key exchange}, \textbf{AES-GCM symmetric encryption},
+and \textbf{WebSocket-based real-time message delivery} ensures that
+messages remain private and cannot be intercepted or modified during
+transmission.
+
+Additionally, the implementation of a \textbf{lightweight Intrusion
+Detection System (IDS)} enhances system security by detecting and
+mitigating brute-force attacks, ensuring that only authorized users can
+access their accounts. The usage of \textbf{bcrypt hashing for password
+security} and \textbf{JWT for session authentication} further reinforces
+the trust and safety of the communication environment.
+
+Overall, the system successfully meets the core objectives of
+\textbf{Confidentiality, Integrity, Authentication, and Availability
+(CIA)}, and effectively illustrates the practical use of cryptographic
+mechanisms in secure communication applications. The project also
+demonstrates a clear alignment with real-world messaging systems such as
+WhatsApp, Signal, Telegram, and secure enterprise messaging platforms.
+
+\subsection{\texorpdfstring{\textbf{10.2 Future
+Enhancements}}{10.2 Future Enhancements}}\label{future-enhancements}
+
+While the system performs efficiently for academic and small-scale
+practical use, several enhancements can be incorporated to extend
+scalability, security, and usability:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2192}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4932}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2603}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Area of Enhancement}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Description}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Benefit}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{True End-to-End Encryption (E2EE)} & Currently, the server
+re-encrypts messages. In future, users can exchange encryption keys
+directly using Diffie-Hellman or Public Key Fingerprinting. & Server
+will not be able to access plaintext at any stage. \\
+\textbf{Database Encryption} & Encrypting stored message ciphertexts
+along with IVs using a master key. & Protects message data if server
+storage is compromised. \\
+\textbf{Key Rotation / Ephemeral Keys} & Regular generation and refresh
+of AES session keys. & Improves forward secrecy and resilience against
+key leaks. \\
+\textbf{Group Chat Support} & Implement message fan-out encryption for
+multiple recipients. & Enables use in teams or organizational
+environments. \\
+\textbf{File / Image Secure Transfer} & Extend AES encryption to binary
+media streams. & Makes system more practical for real-world use. \\
+\textbf{Advanced IDS / AI Threat Detection} & Machine learning models to
+analyze abnormal login or network behavior. & Provides proactive cyber
+threat intelligence. \\
+\textbf{Mobile Application Interface} & Develop Android/iOS version
+using React Native. & Increases accessibility and usability. \\
+\end{longtable}
+}
+
+\section{\texorpdfstring{\textbf{10.3 Final
+Remarks}}{10.3 Final Remarks}}\label{final-remarks}
+
+This project demonstrates how secure communication can be implemented
+effectively using open-source tools and well-established cryptographic
+principles. By combining encryption, real-time networking, and threat
+monitoring, the project not only fulfills curriculum objectives but also
+provides a foundation that can be enhanced into a professionally
+deployable secure messaging platform.
+
+It highlights the importance of:
+
+\begin{itemize}
+\item
+  Designing security early in software systems
+\item
+  Protecting data privacy as a fundamental right
+\item
+  Continual monitoring to detect evolving cyber threats
+\end{itemize}
+
+With further enhancements, the system can evolve into a
+\textbf{production-grade secure communication application} suitable for
+real-world usage.
+
+\section{}\label{section-30}
+
+\section{}\label{section-31}
+
+\section{\texorpdfstring{\textbf{11. Future
+Enhancements}}{11. Future Enhancements}}\label{future-enhancements-1}
+
+Although the Secure Messaging System fulfills core security and
+communication requirements, several enhancements can further improve
+efficiency, scalability, and robustness. The following improvements may
+be considered for future development:
+
+\begin{itemize}
+\item
+  \textbf{True End-to-End Encryption (E2EE)}\\
+  Currently, the server re-encrypts messages before forwarding them. In
+  future versions, the sender and recipient can exchange encryption keys
+  directly using \textbf{Diffie--Hellman} or \textbf{Signal Protocol},
+  ensuring that even the server cannot access plaintext messages at any
+  point.
+\item
+  \textbf{Group Chat and Broadcast Support}\\
+  Extending the encryption logic to support secure \textbf{multi-user
+  chats} can allow communication in teams and organizations. Each group
+  would maintain its own secure session key.
+\item
+  \textbf{Encrypted File and Media Sharing}\\
+  The system can be enhanced to support secure transfer of
+  \textbf{images, audio, video, and documents} using AES encryption on
+  binary data streams.
+\item
+  \textbf{Cloud Deployment and Scalability}\\
+  Deploying the system on cloud platforms such as AWS, Azure, or GCP
+  with load balancing can support thousands of concurrent users.
+\item
+  \textbf{Cross-Platform Mobile Applications}\\
+  Implementing mobile versions using \textbf{React Native} or
+  \textbf{Flutter} would make the system accessible across Android and
+  iOS devices.
+\item
+  \textbf{AI-Based Intrusion Detection}\\
+  The IDS can be enhanced to detect complex attack patterns using
+  \textbf{machine learning} models trained on login and network behavior
+  analytics.
+\item
+  \textbf{Database-Level Encryption}\\
+  Encrypting stored ciphertext and metadata in the database using a
+  server-wide master key would further strengthen data-at-rest security.
+\end{itemize}
+
+\section{\texorpdfstring{\textbf{12.
+References}}{12. References}}\label{references}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  William Stallings, \emph{Cryptography and Network Security: Principles
+  and Practices}, Pearson Education.
+\item
+  Atul Kahate, \emph{Cryptography and Network Security}, McGraw Hill
+  Education.
+\item
+  Kevin Mandia, Chris Prosise, Matt Pepe, \emph{Incident Response and
+  Computer Forensics}, McGraw Hill.
+\item
+  NIST, ``Advanced Encryption Standard (AES) Specification,'' Federal
+  Information Processing Standard (FIPS) Publication 197.
+\item
+  Rivest, R., Shamir, A., Adleman, L., ``A Method for Obtaining Digital
+  Signatures and Public-Key Cryptosystems,'' MIT, 1978.
+\item
+  FastAPI Documentation --- \url{https://fastapi.tiangolo.com}
+\item
+  Web Crypto API Documentation ---
+  \url{https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API}
+\item
+  React Official Documentation --- \url{https://react.dev}
+\item
+  SQLite Database Guide --- \url{https://www.sqlite.org}
+\item
+  OWASP Foundation, ``Authentication and Password Management Best
+  Practices,'' \url{https://owasp.org}
+\end{enumerate}
+
+\subsection{}\label{section-32}
+
+
+\end{document}

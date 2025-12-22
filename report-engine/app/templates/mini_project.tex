@@ -1,0 +1,232 @@
+\documentclass[12pt, a4paper]{report}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}      % For images
+\usepackage{geometry}      % For margins
+\usepackage{mathptmx}      % Times New Roman font
+\usepackage{setspace}      % For line spacing
+\usepackage{titlesec}      % To format chapter headings
+\usepackage{fancyhdr}      % For headers and footers
+\usepackage{cite}          % For references
+\usepackage{hyperref}      % For clickable links
+\usepackage{tabularx}      % For better tables
+\usepackage{longtable}     % REQUIRED for Pandoc tables
+\usepackage{booktabs}      % REQUIRED for Pandoc tables
+\usepackage{array}         % REQUIRED for Pandoc tables
+\usepackage{calc}          % REQUIRED for Pandoc tables
+\usepackage{amsmath}       % For math formulas
+\usepackage{caption}       % For caption formatting
+
+% ==================================================================
+% CRITICAL FIXES (Copy this block to ALL templates)
+% ==================================================================
+
+% 1. FIX DOUBLE NUMBERING (Removes "0.1" or "Chapter 1")
+% Since your Report Engine sends content like "1. Introduction", we
+% turn off LaTeX's internal numbering to prevent "1. 1. Introduction".
+\setcounter{secnumdepth}{0}
+
+% 2. FIX FLOATING IMAGES (Keeps images exactly where they are)
+\usepackage{float}
+\let\origfigure\figure
+\let\endorigfigure\endfigure
+\renewenvironment{figure}[1][2] {
+    \expandafter\origfigure\expandafter[H]
+} {
+    \endorigfigure
+}
+
+% 3. FIX CAPTION FORMATTING
+\usepackage[font=small,labelfont=bf]{caption}
+
+% ==================================================================
+
+% --- Page Layout ---
+\geometry{
+    top=1in,
+    bottom=1in,
+    left=1.25in, % Standard binding margin
+    right=1in
+}
+\onehalfspacing % Standard 1.5 line spacing
+
+% --- Formatting Chapter Headings ---
+% Modified to remove "Chapter N" labels
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\centering\fontsize{16}{19}\selectfont}
+  {} 
+  {0pt}
+  {\fontsize{18}{21}\selectfont}
+
+\titleformat{\section}
+  {\normalfont\bfseries\fontsize{14}{16}\selectfont}
+  {}
+  {0em}
+  {}
+
+\titleformat{\subsection}
+  {\normalfont\bfseries\fontsize{12}{14}\selectfont}
+  {}
+  {0em}
+  {}
+
+% --- Pandoc Macros ---
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% --- Document Starts ---
+
+% --- Document Starts ---
+\begin{document}
+
+% =============================================================================
+% TITLE PAGE
+% =============================================================================
+\begin{titlepage}
+    \centering
+    \vspace*{0.5cm}
+    
+    {\fontsize{16}{19}\bfseries \VAR{title} \par}
+    
+    \vspace{1cm}
+    {\fontsize{14}{16}\bfseries Mini Skill Project Report \par}
+    
+    \vspace{1cm}
+    {\fontsize{12}{14}\selectfont Submitted for the partial fulfillment of the degree of \par}
+    
+    \vspace{0.5cm}
+    {\fontsize{14}{16}\bfseries Bachelor of Technology \par}
+    
+    \vspace{0.5cm}
+    {\fontsize{12}{14}\selectfont In \par}
+    
+    \vspace{0.5cm}
+    {\fontsize{14}{16}\bfseries \VAR{department} \par}
+    
+    \vspace{1cm}
+    {\fontsize{12}{14}\bfseries Submitted By \par}
+    \vspace{0.5cm}
+    {\bfseries \VAR{author_name} (\VAR{roll_no})}
+    
+    \vspace{1cm}
+    {\fontsize{12}{14}\bfseries UNDER THE SUPERVISION AND GUIDANCE OF \par}
+    \vspace{0.5cm}
+    {\bfseries \VAR{guide_name} \par}
+    {Assistant Professor} \par
+    {\VAR{department}}
+    
+    \vfill
+    
+    % Logo Placeholder
+    % \includegraphics[width=4cm]{logo.png} 
+    \textbf{[INSTITUTE LOGO HERE]}
+    
+    \vfill
+    
+    {\fontsize{14}{16}\bfseries MADHAV INSTITUTE OF TECHNOLOGY \& SCIENCE, GWALIOR (M.P.), INDIA \par}
+    {\fontsize{12}{14}\bfseries (Deemed to be University) \par}
+    {\fontsize{12}{14}\bfseries NAAC ACCREDITED WITH A++ GRADE \par}
+    
+    \vspace{0.5cm}
+    {\bfseries \VAR{session_year}}
+\end{titlepage}
+
+% =============================================================================
+% FRONT MATTER
+% =============================================================================
+\pagenumbering{roman} % i, ii, iii...
+
+% --- Declaration ---
+\chapter*{Declaration by the Candidate}
+\addcontentsline{toc}{chapter}{Declaration by the Candidate}
+
+We hereby declare that the work entitled \textbf{“\VAR{title}”} is our work, conducted under the supervision of \textbf{\VAR{guide_name}}, Assistant Professor, \VAR{department}, during the session \VAR{session_year}. The report submitted by us is a record of bonafide work carried out by us.
+
+We further declare that the work reported in this report has not been submitted and will not be submitted, either in part or in full, for the award of any other degree or diploma in this institute or any other institute or university.
+
+\vspace{2cm}
+
+\noindent
+\begin{tabularx}{\textwidth}{@{}X X@{}}
+    \textbf{\VAR{author_name}} & \textbf{[Partner Name if any]} \\
+    \VAR{roll_no} & [Roll No] \\
+    \\
+    Date: \today & Place: Gwalior
+\end{tabularx}
+
+\vspace{2cm}
+\noindent
+This is to certify that the above statement made by the candidates is correct to the best of my knowledge and belief.
+
+\vspace{2cm}
+\noindent
+\textbf{Guided By:} \\
+\textbf{\VAR{guide_name}} \\
+Assistant Professor \\
+\VAR{department} \\
+MITS, Gwalior
+
+\newpage
+
+% --- Approval Certificate ---
+\chapter*{Certificate}
+\addcontentsline{toc}{chapter}{Certificate}
+
+\vspace{1cm}
+\noindent
+\begin{tabularx}{\textwidth}{@{}X X@{}}
+    \textbf{Departmental Project Coordinator} & \textbf{Approved by HoD} \\[2cm]
+    \rule{5cm}{0.4pt} & \rule{5cm}{0.4pt} \\
+    \textbf{[Coordinator Name]} & \textbf{[HoD Name]} \\
+    Assistant Professor & Professor \& Head \\
+    \VAR{department} & \VAR{department} \\
+    MITS, Gwalior & MITS, Gwalior
+\end{tabularx}
+
+\newpage
+
+% --- Acknowledgement ---
+\chapter*{Acknowledgement}
+\addcontentsline{toc}{chapter}{Acknowledgement}
+
+We would like to express our sincere gratitude to our supervisor \textbf{\VAR{guide_name}} for their constant guidance, encouragement, and valuable suggestions throughout this project.
+
+We would also like to thank the \textbf{\VAR{department}, MITS Gwalior}, for providing the required facilities and support during the course of this work.
+
+Our heartfelt thanks to our friends and family for their patience, understanding, and motivation during the completion of this project.
+
+\vspace{2cm}
+
+\noindent
+\begin{tabularx}{\textwidth}{@{}X@{}}
+    \textbf{\VAR{author_name} (\VAR{roll_no})}
+\end{tabularx}
+
+\newpage
+
+% --- Tables of Contents and Lists ---
+\tableofcontents
+\listoffigures
+\listoftables
+
+\newpage
+
+% --- Acronyms (Optional / Placeholder) ---
+%\chapter*{Acronyms}
+%\addcontentsline{toc}{chapter}{Acronyms}
+% ... Acronym table ...
+
+\newpage
+\pagenumbering{arabic} % 1, 2, 3...
+
+% =============================================================================
+% MAIN CONTENT
+% =============================================================================
+% The body content is injected here.
+% Expectation: The markdown content should start with # Heading 1 (which becomes Chapter 1)
+% or we can force a chapter if title is missing.
+
+\VAR{body_content}
+
+\end{document}

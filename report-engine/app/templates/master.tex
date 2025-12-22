@@ -1,0 +1,239 @@
+\documentclass[12pt, a4paper]{report}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}      % For images
+\usepackage{geometry}      % For margins
+\usepackage{mathptmx}      % Times New Roman font
+\usepackage{setspace}      % For line spacing
+\usepackage{titlesec}      % To format chapter headings
+\usepackage{fancyhdr}      % For headers and footers
+\usepackage{cite}          % For references
+\usepackage{hyperref}      % For clickable links
+\usepackage{tabularx}      % For better tables
+\usepackage{longtable}     % REQUIRED for Pandoc tables
+\usepackage{booktabs}      % REQUIRED for Pandoc tables
+\usepackage{array}         % REQUIRED for Pandoc tables
+\usepackage{calc}          % REQUIRED for Pandoc tables
+\usepackage{amsmath}       % For math formulas
+\usepackage{caption}       % For caption formatting
+
+% ==================================================================
+% CRITICAL FIXES (Copy this block to ALL templates)
+% ==================================================================
+
+% 1. FIX DOUBLE NUMBERING (Removes "0.1" or "Chapter 1")
+% Since your Report Engine sends content like "1. Introduction", we
+% turn off LaTeX's internal numbering to prevent "1. 1. Introduction".
+\setcounter{secnumdepth}{0}
+
+% 2. FIX FLOATING IMAGES (Keeps images exactly where they are)
+\usepackage{float}
+\let\origfigure\figure
+\let\endorigfigure\endfigure
+\renewenvironment{figure}[1][2] {
+    \expandafter\origfigure\expandafter[H]
+} {
+    \endorigfigure
+}
+
+% 3. FIX CAPTION FORMATTING
+\usepackage[font=small,labelfont=bf]{caption}
+
+% ==================================================================
+
+% --- Page Layout ---
+\geometry{
+    top=1in,
+    bottom=1in,
+    left=1.25in, % Standard binding margin
+    right=1in
+}
+\onehalfspacing % Standard 1.5 line spacing
+
+% --- Formatting Chapter Headings ---
+% Modified to remove "Chapter N" labels
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\centering\fontsize{16}{19}\selectfont}
+  {} 
+  {0pt}
+  {\fontsize{18}{21}\selectfont}
+
+\titleformat{\section}
+  {\normalfont\bfseries\fontsize{14}{16}\selectfont}
+  {}
+  {0em}
+  {}
+
+\titleformat{\subsection}
+  {\normalfont\bfseries\fontsize{12}{14}\selectfont}
+  {}
+  {0em}
+  {}
+
+% --- Pandoc Macros ---
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% --- Document Starts ---
+
+\begin{document}
+
+% -------------------------
+% 1. TITLE PAGE
+% -------------------------
+\begin{titlepage}
+    \begin{center}
+        \vspace*{1cm}
+
+        \Huge
+        \textbf{\VAR{title}}
+
+        \vspace{1.5cm}
+
+        \large
+        \textit{A Project Report Submitted in partial fulfillment of the requirements\\ for the degree of}
+
+        \vspace{0.5cm}
+
+        \Large
+        \textbf{Bachelor of Technology}
+
+        \vspace{0.5cm}
+
+        \large
+        In
+
+        \vspace{0.5cm}
+
+        \Large
+        \textbf{\VAR{department}}
+
+        \vspace{1.5cm}
+
+        \textbf{Submitted by:}
+
+        \vspace{0.5cm}
+        \Large
+        \VAR{author_name} \\
+        (Roll No: \VAR{roll_no})
+
+        \vspace{1.5cm}
+
+        \large
+        \textbf{Under the Guidance of:}
+
+        \vspace{0.5cm}
+        \Large
+        \VAR{guide_name}
+
+        \vfill
+
+        \Large
+        \textbf{College Name / University Logo Here} \\
+        \large
+        City, State - Zip Code \\
+        \textbf{\VAR{session_year}}
+
+    \end{center}
+\end{titlepage}
+
+% -------------------------
+% 2. CERTIFICATE
+% -------------------------
+\newpage
+\begin{center}
+    \vspace*{2cm}
+    \Large \textbf{CERTIFICATE}
+    \vspace{1cm}
+\end{center}
+
+\noindent This is to certify that the project entitled \textbf{\VAR{title}} submitted by \textbf{\VAR{author_name}} (Roll No: \VAR{roll_no}) to the \textbf{\VAR{department}} of College Name, in partial fulfillment for the award of the degree of \textbf{Bachelor of Technology}, is a bona fide record of work carried out by them under my supervision.
+
+\vspace{3cm}
+
+\noindent
+\begin{minipage}{0.45\textwidth}
+    \begin{flushleft}
+        \textbf{\VAR{guide_name}} \\
+        (Project Guide)
+    \end{flushleft}
+\end{minipage}
+\hfill
+\begin{minipage}{0.45\textwidth}
+    \begin{flushright}
+        \textbf{Head of Department} \\
+        \VAR{department}
+    \end{flushright}
+\end{minipage}
+
+\vfill
+\begin{center}
+    External Examiner \hspace{4cm} Internal Examiner
+\end{center}
+
+% -------------------------
+% 3. DECLARATION
+% -------------------------
+\newpage
+\begin{center}
+    \vspace*{2cm}
+    \Large \textbf{DECLARATION}
+    \vspace{1cm}
+\end{center}
+
+\noindent I hereby declare that the project entitled \textbf{\VAR{title}} submitted in partial fulfillment of the requirements for the award of the degree of Bachelor of Technology in \textbf{\VAR{department}} is a record of original work done by me under the supervision of \textbf{\VAR{guide_name}}. This project work has not been submitted to any other University or Institute for the award of any degree or diploma.
+
+\vspace{3cm}
+
+\noindent
+\begin{flushright}
+    \textbf{\VAR{author_name}} \\
+    (Roll No: \VAR{roll_no})
+\end{flushright}
+
+% -------------------------
+% 4. ACKNOWLEDGMENT
+% -------------------------
+\newpage
+\begin{center}
+    \vspace*{2cm}
+    \Large \textbf{ACKNOWLEDGMENT}
+    \vspace{1cm}
+\end{center}
+
+\noindent I would like to express my sincere gratitude to my guide \textbf{\VAR{guide_name}} for their continuous support and guidance throughout this project. I also thank the Head of the Department, \VAR{department}, and the faculty members for their encouragement.
+
+\vspace{2cm}
+
+\noindent Date: \today
+
+\vspace{2cm}
+
+\noindent
+\begin{flushright}
+    \textbf{\VAR{author_name}}
+\end{flushright}
+
+
+% -------------------------
+% 5. TABLE OF CONTENTS
+% -------------------------
+\newpage
+\tableofcontents
+\newpage
+
+% -------------------------
+% 6. MAIN CONTENT
+% -------------------------
+
+% Abstract if provided
+\section*{Abstract}
+\VAR{abstract}
+
+\newpage
+
+% Body
+\VAR{body_content}
+
+\end{document}
