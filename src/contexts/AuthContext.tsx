@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { type User, onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 
 interface AuthContextType {
   currentUser: User | null;
-  userRole: 'student' | 'professor' | null;
+  userRole: 'student' | 'professor' | 'admin' | null;
   loading: boolean;
   logout: () => Promise<void>;
   userData: any | null;
@@ -23,7 +23,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userRole, setUserRole] = useState<'student' | 'professor' | null>(null);
+  const [userRole, setUserRole] = useState<'student' | 'professor' | 'admin' | null>(null);
   const [userData, setUserData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -34,7 +34,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Fetch user role and data from Firestore
         try {
           const userDoc = await getDoc(doc(db, 'users', user.uid));
-          if (userDoc.exists()) {
+          
+          // HARDCODED ADMIN OVERRIDE
+          if (user.email === 'admin@ain.com' || user.email === 'admin@ani.com') {
+             const adminData = {
+                 uid: user.uid,
+                 email: user.email,
+                 name: "System Admin",
+                 role: 'admin' as const,
+                 department: 'Administration'
+             };
+             // Ensure DB reflects this
+             if (!userDoc.exists() || userDoc.data()?.role !== 'admin') {
+                 await setDoc(doc(db, 'users', user.uid), adminData, { merge: true });
+                 setUserRole('admin');
+                 setUserData(adminData);
+             } else {
+                 setUserRole('admin');
+                 setUserData(userDoc.data());
+             }
+          } 
+          else if (userDoc.exists()) {
             const data = userDoc.data();
             setUserRole(data.role);
             setUserData(data);

@@ -16,6 +16,7 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -27,13 +28,16 @@ const Register = () => {
     setLoading(true);
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      navigate('/role-selection');
+      // Don't navigate immediately. Show success message first.
+      setSuccess(true);
+      setTimeout(() => {
+          navigate('/login');
+      }, 4000);
     } catch (err: any) {
         console.error(err);
       setError('Failed to create account. ' + err.message);
-    } finally {
-      setLoading(false);
-    }
+      setLoading(false); // Only stop loading on error, on success we keep UI state for redirect
+    } 
   };
 
   const handleGoogleLogin = async () => {
@@ -128,10 +132,18 @@ const Register = () => {
                 />
               </div>
               {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
-              <Button type="submit" className="w-full" disabled={loading}>
-                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Create account
-              </Button>
+              {success ? (
+                  <div className="flex flex-col items-center justify-center space-y-2 p-4 bg-green-500/10 text-green-600 rounded-lg border border-green-500/20">
+                      <p className="font-semibold text-center">Registration Successful!</p>
+                      <p className="text-xs text-center">Redirecting to login in 4 seconds...</p>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                  </div>
+              ) : (
+                  <Button type="submit" className="w-full" disabled={loading}>
+                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Create account
+                  </Button>
+              )}
             </form>
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}

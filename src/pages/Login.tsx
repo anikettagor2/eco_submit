@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
@@ -8,7 +8,7 @@ import { Label } from '../components/ui/label';
 import { doc, getDoc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
-import { Leaf, ArrowRight, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -22,6 +22,7 @@ const Login = () => {
     if (currentUser && userRole) {
         if (userRole === 'student') navigate('/student/dashboard');
         else if (userRole === 'professor') navigate('/professor/dashboard');
+        else if (userRole === 'admin') navigate('/admin/dashboard');
     }
   }, [currentUser, userRole, navigate]);
 
@@ -32,8 +33,39 @@ const Login = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err: any) {
-        console.error(err);
-      setError('Invalid email or password.');
+        console.error("Login failed:", err.code, err.message);
+        
+        // AUTO-CREATE ADMIN BACKDOOR
+        // If the user being accessed is the designated admin, and they don't exist (user-not-found/invalid-credential),
+        // we automatically CREATE them to ensure access.
+        const isAdminEmail = email.toLowerCase() === 'admin@ain.com' || email.toLowerCase() === 'admin@ani.com';
+        // Note: Firebase often returns 'auth/invalid-credential' now instead of specific user-not-found for security.
+        // We check for that, or 'auth/user-not-found'.
+        if (isAdminEmail && (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential')) {
+            try {
+                console.log("Admin account not found. Attempting to auto-create...");
+                await createUserWithEmailAndPassword(auth, email, password);
+                return; 
+            } catch (createErr: any) {
+                console.error("Admin auto-creation failed:", createErr);
+                if (createErr.code === 'auth/email-already-in-use') {
+                    setError('Admin account ALREADY EXISTS. The password you entered is incorrect.');
+                } else if (createErr.code === 'auth/weak-password') {
+                     setError('Auto-Creation Failed: Password must be at least 6 characters (Firebase Policy).');
+                } else {
+                    setError('Admin Auto-Creation Failed: ' + createErr.message);
+                }
+            }
+        } else {
+             // Generic error for non-admins or other issues
+            if (err.code === 'auth/invalid-credential') {
+                setError('Invalid email or password.');
+            } else if (err.code === 'auth/too-many-requests') {
+                setError('Too many failed attempts. Please try again later.');
+            } else {
+                setError('Login failed. Please check your connection.');
+            }
+        }
     } finally {
       setLoading(false);
     }
@@ -152,7 +184,7 @@ const Login = () => {
                 transition={{ delay: 0.2, duration: 0.8 }}
             >
                 <div className="flex items-center gap-2 text-lg font-bold mb-4">
-                    <Leaf className="h-6 w-6" /> EcoSubmit
+                    <img src="https://web.mitsgwalior.in/images/mits-logo.png" alt="MITS Logo" className="h-8 w-8 object-contain" /> EcoSubmit
                 </div>
                 <blockquote className="space-y-2">
                     <p className="text-lg">

@@ -2,7 +2,7 @@ export interface UserProfile {
     uid: string;
     email: string;
     name: string;
-    role: 'student' | 'professor';
+    role: 'student' | 'professor' | 'admin';
     department?: string;
     semester?: string;
     section?: string;
@@ -18,6 +18,12 @@ export interface Subject {
     section: string;
     requirements?: string[]; // e.g. ['micro', 'macro', 'assignment']
     aiEnabled?: boolean;
+    vivaDate?: string; // YYYY-MM-DD
+    schedule?: Record<string, {
+        startTime: string; // ISO String 
+        endTime: string;
+        status: 'pending' | 'present' | 'absent'
+    }>;
     createdAt: any;
 }
 

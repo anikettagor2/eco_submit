@@ -1,5 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as pdfjsLib from 'pdfjs-dist';
+import mammoth from 'mammoth';
+
+import { db } from "./firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 // Configure PDF.js worker
 const initPDFWorker = () => {
@@ -8,11 +12,38 @@ const initPDFWorker = () => {
     }
 };
 
-// GEMINI API KEY (Google AI Studio format)
-const API_KEY = "AIzaSyDNcNoE_MU5MdZwwwIxKK__0G-yqPULLts";
-const genAI = new GoogleGenerativeAI(API_KEY);
-// Using gemini-2.0-flash-exp (confirmed working with this API key)
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+// --- DYNAMIC AI MODEL INITIALIZATION ---
+// We now fetch the key from Firestore (useful for Admin overrides) or fallback to Environment/Hardcoded.
+
+// Using gemini-2.0-flash-exp
+const MODEL_NAME = "gemini-2.0-flash-exp";
+const DEFAULT_KEY = "AIzaSyDNcNoE_MU5MdZwwwIxKK__0G-yqPULLts"; // Fallback (Consider moving to .env)
+
+// Cached instance
+let cachedModel: any = null;
+
+const getModel = async () => {
+    if (cachedModel) return cachedModel;
+
+    let apiKey = DEFAULT_KEY;
+    try {
+        const docRef = doc(db, "settings", "config");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists() && docSnap.data().geminiApiKey) {
+            apiKey = docSnap.data().geminiApiKey;
+            console.log("Using Custom API Key from Settings");
+        }
+    } catch (e) {
+        console.warn("Failed to fetch custom API key, using default.", e);
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    cachedModel = genAI.getGenerativeModel({
+        model: MODEL_NAME,
+        generationConfig: { responseMimeType: "application/json" }
+    });
+    return cachedModel;
+};
 
 // Helper: Retry Logic
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -31,34 +62,79 @@ const retryWithDelay = async <T>(fn: () => Promise<T>, retries = 3, interval = 2
     }
 };
 
+// Helper: Detect File Quality
+const getFileType = (buffer: ArrayBuffer): 'pdf' | 'docx' | 'unknown' => {
+    const arr = new Uint8Array(buffer).subarray(0, 4);
+    const header = arr.reduce((acc, byte) => acc + byte.toString(16).padStart(2, '0'), '');
+
+    // PDF: %PDF (25 50 44 46)
+    if (header.includes('25504446')) return 'pdf';
+    // DOCX (ZIP): PK.. (50 4b 03 04)
+    if (header.includes('504b0304')) return 'docx';
+
+    return 'unknown';
+};
+
 /**
- * Extracts text from a PDF URL (Client-Side).
+ * Extracts text from a File URL (Blob or Remote).
+ * Auto-detects content type regardless of URL extension.
  */
 async function extractTextFromFile(url: string): Promise<string> {
-    // Basic check to avoid trying to parse DOCX as PDF
-    if (url.toLowerCase().includes(".doc") && !url.toLowerCase().includes(".pdf")) {
-        throw new Error("AI analysis is currently only supported for PDF files.");
-    }
-
-    initPDFWorker();
     try {
-        const loadingTask = pdfjsLib.getDocument(url);
-        const pdf = await loadingTask.promise;
-        return await parsePdfPages(pdf);
-    } catch (error: any) {
-        if (error.message?.includes("AI analysis")) throw error;
+        // 1. Fetch the generic data first
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Failed to fetch file: ${response.statusText}`);
+        const arrayBuffer = await response.arrayBuffer();
 
-        console.warn("Direct file fetch failed (CORS?), switching to proxy...", error);
-        try {
-            const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
+        // 2. Detect Type
+        const type = getFileType(arrayBuffer);
+        console.log(`Detected file type: ${type}`);
+
+        // 3. route to parser
+        if (type === 'docx') {
+            const result = await mammoth.extractRawText({ arrayBuffer });
+            return result.value.trim();
+        }
+
+        if (type === 'pdf') {
             initPDFWorker();
-            const loadingTask = pdfjsLib.getDocument(proxyUrl);
+            // PDF.js can accept ArrayBuffer (TypedArray)
+            const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
             const pdf = await loadingTask.promise;
             return await parsePdfPages(pdf);
-        } catch (proxyError) {
-            console.error("Proxy fetch failed:", proxyError);
-            throw new Error("Could not read file. Ensure file is public or CORS is configured.");
         }
+
+        // Fallback or Unknown
+        throw new Error("Unsupported file type. Please upload a valid PDF or DOCX.");
+
+    } catch (error: any) {
+        console.error("Text Extraction Failed:", error);
+
+        // Fallback for Remote URLs that might need proxy (Only for PDF logic if initial fetch failed due to CORS)
+        // Note: Initial fetch() above would fail if CORS is an issue.
+        if (url.startsWith("http") && !url.includes("blob:")) {
+            // Try Proxy for PDF only as last resort if we suspect it's a PDF
+            console.warn("Retrying with Proxy...");
+            try {
+                const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
+                // We restart the flow with the proxy URL
+                // We can't easily recurse without risking loop, so explicitly fetch proxy
+                const pRes = await fetch(proxyUrl);
+                const pBuf = await pRes.arrayBuffer();
+                const pType = getFileType(pBuf);
+
+                if (pType === 'pdf') {
+                    initPDFWorker();
+                    const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(pBuf) });
+                    const pdf = await loadingTask.promise;
+                    return await parsePdfPages(pdf);
+                }
+            } catch (pErr) {
+                console.error("Proxy retry failed", pErr);
+            }
+        }
+
+        throw error;
     }
 }
 
@@ -109,6 +185,7 @@ export const generateInsights = async (subjectName: string, studentName: string,
     console.log("Calling Gemini SDK directly...");
 
     return retryWithDelay(async () => {
+        const model = await getModel();
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text();
@@ -132,9 +209,8 @@ const fallbackTopicCheck = (newTopic: string, existingTopics: string[]) => {
         };
     }
 
-    // 2. Keyword check for validity/quality (Optional, keep it lenient)
-    const keywords = ["authentication", "hashing", "password", "security", "encryption", "system", "management", "app", "analysis", "detection", "smart", "using"];
-    const hasKeyword = keywords.some(k => newTopic.toLowerCase().includes(k));
+    // 2. Keyword check removed (unused)
+    // const hasKeyword = keywords.some(k => newTopic.toLowerCase().includes(k));
 
     // If we can't judge deeply, we err on the side of allowing it (Fail Open)
     return {
@@ -169,19 +245,19 @@ export const checkTopicSimilarity = async (newTopic: string, subjectName: string
     1. UNIQUENESS: Is "${newTopic}" semantically different from all existing topics?
        - If too similar to any existing topic → REJECT
     
-    2. TOPIC-PDF MATCH (CRITICAL): Does the PDF content actually discuss "${newTopic}"?
-       - Read the PDF content carefully
-       - If PDF is about a DIFFERENT topic → REJECT immediately
-       - Example: If topic is "process synchronization" but PDF discusses "network security" → REJECT
-       - The PDF MUST contain substantial content about the declared topic
+    2. TOPIC-FILE MATCH (CRITICAL): Does the FILE content actually discuss "${newTopic}"?
+       - Read the FILE content carefully
+       - If FILE is about a DIFFERENT topic → REJECT immediately
+       - Example: If topic is "process synchronization" but FILE discusses "network security" → REJECT
+       - The FILE MUST contain substantial content about the declared topic
     
-    3. SUBJECT RELEVANCE: Are both the topic AND PDF content relevant to "${subjectName}"?
-       - If topic or PDF content belongs to a different subject → REJECT
-       - Example: "Information Security" PDF for "Operating Systems" subject → REJECT
+    3. SUBJECT RELEVANCE: Are both the topic AND FILE content relevant to "${subjectName}"?
+       - If topic or FILE content belongs to a different subject → REJECT
+       - Example: "Information Security" FILE for "Operating Systems" subject → REJECT
     
     IMPORTANT: Be STRICT. If there's ANY mismatch between:
     - What the student CLAIMS (topic)
-    - What the PDF ACTUALLY contains
+    - What the FILE ACTUALLY contains
     - What the SUBJECT requires
     Then you MUST reject with isUnique: false
     
@@ -195,6 +271,7 @@ export const checkTopicSimilarity = async (newTopic: string, subjectName: string
 
     try {
         return await retryWithDelay(async () => {
+            const model = await getModel();
             const result = await model.generateContent(prompt);
             const response = await result.response;
             const text = response.text();

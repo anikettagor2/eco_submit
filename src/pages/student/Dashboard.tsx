@@ -1,4 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { renderAsync } from "docx-preview";
 import { useAuth } from "@/contexts/AuthContext";
 import { db, storage } from "@/lib/firebase";
 import { collection, query, where, addDoc, serverTimestamp, onSnapshot, getDocs } from "firebase/firestore";
@@ -18,10 +20,13 @@ import { checkTopicSimilarity } from "@/lib/ai";
 import { jsPDF } from "jspdf";
 
 const StudentDashboard = () => {
+    const navigate = useNavigate();
     const { currentUser, userData, logout } = useAuth();
     const [subjects, setSubjects] = useState<Subject[]>([]);
     const [submissions, setSubmissions] = useState<Submission[]>([]);
     const [loading, setLoading] = useState(true);
+
+
 
     // Upload & Preview State
     const [selectedSubject, setSelectedSubject] = useState("");
@@ -43,6 +48,29 @@ const StudentDashboard = () => {
     const [viewSubject, setViewSubject] = useState<Subject | null>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     
+    
+    const docxPreviewRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!selectedFile || !previewUrl || selectedFile.type === 'application/pdf') return;
+
+        // Render DOCX if container is ready
+        if (docxPreviewRef.current) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                if (reader.result instanceof ArrayBuffer) {
+                    renderAsync(reader.result, docxPreviewRef.current!, undefined, {
+                        className: "docx-preview-wrapper",
+                        inWrapper: true,
+                        ignoreWidth: true,
+                        ignoreHeight: false
+                    }).catch(err => console.error("DOCX Preview Failed", err));
+                }
+            };
+            reader.readAsArrayBuffer(selectedFile);
+        }
+    }, [selectedFile, previewUrl, isSubmissionOpen]);
+
     useEffect(() => {
         if (!currentUser || !userData) return;
 
@@ -185,10 +213,21 @@ const StudentDashboard = () => {
 
         try {
             const subject = subjects.find(s => s.id === selectedSubject);
-            const storageRef = ref(storage, `submissions/${currentUser.uid}/${selectedSubject}/${fileName}`);
-            const uploadTask = uploadBytesResumable(storageRef, fileToUpload);
+                    // --- COVER PAGE LOGIC (PDF ONLY) ---
+                    let finalBlob = (await fileToUpload.arrayBuffer()) as unknown as ArrayBuffer; // Default to original
+                    let finalFileType = fileToUpload.type;
 
-            uploadTask.on('state_changed', 
+                    if (fileToUpload.type === 'application/pdf') {
+                         // We upload the original PDF directly.
+                         // The cover page will be generated dynamically when the professor views it.
+                         finalBlob = (await fileToUpload.arrayBuffer()) as unknown as ArrayBuffer;
+                    }
+
+                    const storageRef = ref(storage, `submissions/${currentUser.uid}/${selectedSubject}/${fileName}`);
+                    // Wrap in Uint8Array to ensure compatibility
+                    const uploadTask = uploadBytesResumable(storageRef, new Uint8Array(finalBlob), { contentType: finalFileType });
+
+                    uploadTask.on('state_changed', 
                 (snapshot) => {
                     const p = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                     setProgress(p);
@@ -246,6 +285,21 @@ const StudentDashboard = () => {
     };
 
     const openUploadDialog = (subjectId: string, reqType: string) => {
+        const subject = subjects.find(s => s.id === subjectId);
+        if (subject?.vivaDate) {
+            const vivaDate = new Date(subject.vivaDate);
+            // Deadline is 1 day before Viva
+            const deadline = new Date(vivaDate);
+            deadline.setDate(deadline.getDate() - 1);
+            // Set deadline to end of day? Or same time? Let's assume end of day (23:59:59)
+            deadline.setHours(23, 59, 59, 999);
+
+            if (new Date() > deadline) {
+                alert(`Submission Window Closed!\nDeadline: ${deadline.toLocaleDateString()} ${deadline.toLocaleTimeString()}`);
+                return;
+            }
+        }
+
         setSelectedSubject(subjectId);
         setSelectedReqType(reqType);
         // Reset State
@@ -273,7 +327,7 @@ const StudentDashboard = () => {
               <Button variant="ghost" size="icon" onClick={() => setIsProfileOpen(true)} title="Profile">
                   <User className="h-[1.2rem] w-[1.2rem]" />
               </Button>
-              <Button variant="outline" size="sm" onClick={() => logout()}>Logout</Button>
+              <Button variant="outline" size="sm" onClick={() => { logout(); navigate('/'); }}>Logout</Button>
           </div>
         </div>
         
@@ -292,36 +346,65 @@ const StudentDashboard = () => {
                      const completedCount = reqs.filter(r => getSubmissionStatus(sub.id, r)).length;
                      const progress = Math.round((completedCount / reqs.length) * 100);
 
-                     return (
-                         <Card key={sub.id} className="hover:border-primary/50 transition-colors cursor-pointer group relative overflow-hidden" onClick={() => setViewSubject(sub)}>
-                             <div className="absolute top-0 left-0 w-1 h-full bg-primary/20 group-hover:bg-primary transition-colors"></div>
-                             <CardHeader className="pb-2">
-                                 <div className="flex justify-between items-start">
-                                     <div>
-                                         <CardTitle>{sub.name}</CardTitle>
-                                         <CardDescription className="font-mono text-xs mt-1">{sub.code}</CardDescription>
-                                     </div>
-                                     <Badge variant="outline">{reqs.length} Tasks</Badge>
-                                 </div>
-                             </CardHeader>
-                             <CardContent>
-                                 <div className="space-y-2">
-                                     <div className="flex justify-between text-xs text-muted-foreground">
-                                         <span>Progress</span>
-                                         <span>{progress}%</span>
-                                     </div>
-                                     <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                                         <div className="h-full bg-green-500 transition-all duration-500" style={{ width: `${progress}%` }}></div>
-                                     </div>
-                                     <div className="pt-2 text-xs flex gap-2">
-                                        <Badge variant={progress === 100 ? "default" : "secondary"} className={progress===100 ? "bg-green-600 hover:bg-green-700" : ""}>
-                                            {progress === 100 ? "Completed" : "In Progress"}
-                                        </Badge>
-                                     </div>
-                                 </div>
-                             </CardContent>
-                         </Card>
-                     );
+                      const userSlot = sub.schedule?.[currentUser!.uid];
+
+                      return (
+                          <Card key={sub.id} className="hover:border-primary/50 transition-colors cursor-pointer group relative overflow-hidden" onClick={() => setViewSubject(sub)}>
+                              <div className="absolute top-0 left-0 w-1 h-full bg-primary/20 group-hover:bg-primary transition-colors"></div>
+                              <CardHeader className="pb-2">
+                                  <div className="flex justify-between items-start">
+                                      <div>
+                                          <CardTitle>{sub.name}</CardTitle>
+                                          <CardDescription className="font-mono text-xs mt-1">{sub.code}</CardDescription>
+                                      </div>
+                                      <Badge variant="outline">{reqs.length} Tasks</Badge>
+                                  </div>
+                              </CardHeader>
+                              <CardContent>
+                                  <div className="space-y-3">
+                                      {sub.vivaDate && (
+                                          <div className="bg-muted/40 p-2 rounded text-xs space-y-1">
+                                              <div className="flex justify-between font-semibold">
+                                                  <span>Viva Date:</span>
+                                                  <span>{new Date(sub.vivaDate).toLocaleDateString()}</span>
+                                              </div>
+                                              {userSlot ? (
+                                                  <div className="flex justify-between text-blue-600 dark:text-blue-400">
+                                                      <span>Your Slot:</span>
+                                                      <span>{new Date(userSlot.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                                  </div>
+                                              ) : (
+                                                  <div className="text-orange-500 text-[10px]">Slot Pending / Not Assigned</div>
+                                              )}
+                                              <div className="flex justify-between text-muted-foreground border-t pt-1 mt-1 border-dashed">
+                                                 <span>Upload Deadline:</span>
+                                                 <span>{(() => {
+                                                     const d = new Date(sub.vivaDate);
+                                                     d.setDate(d.getDate() - 1);
+                                                     return d.toLocaleDateString();
+                                                 })()}</span>
+                                              </div>
+                                          </div>
+                                      )}
+                                      
+                                      <div className="space-y-2">
+                                          <div className="flex justify-between text-xs text-muted-foreground">
+                                              <span>Progress</span>
+                                              <span>{progress}%</span>
+                                          </div>
+                                          <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                                              <div className="h-full bg-green-500 transition-all duration-500" style={{ width: `${progress}%` }}></div>
+                                          </div>
+                                          <div className="pt-2 text-xs flex gap-2">
+                                            <Badge variant={progress === 100 ? "default" : "secondary"} className={progress===100 ? "bg-green-600 hover:bg-green-700" : ""}>
+                                                {progress === 100 ? "Completed" : "In Progress"}
+                                            </Badge>
+                                         </div>
+                                      </div>
+                                  </div>
+                              </CardContent>
+                          </Card>
+                      );
                  })
              )
             }
@@ -362,18 +445,36 @@ const StudentDashboard = () => {
                                              </div>
                                          </div>
                                          
-                                         <div className="flex items-center gap-3">
-                                             {sub ? (
-                                                 <div className="text-right">
-                                                     <StatusBadge status={sub.status} />
-                                                     {sub.marks && <div className="text-xs font-bold mt-1 text-green-600">{sub.marks}/100</div>}
-                                                 </div>
-                                             ) : (
-                                                 <Button size="sm" onClick={() => openUploadDialog(viewSubject.id, req)}>
-                                                     Upload File
-                                                 </Button>
-                                             )}
-                                         </div>
+                                          <div className="flex items-center gap-3">
+                                              {sub ? (
+                                                  <div className="text-right">
+                                                      <StatusBadge status={sub.status} />
+                                                      {sub.marks && <div className="text-xs font-bold mt-1 text-green-600">{sub.marks}/100</div>}
+                                                  </div>
+                                              ) : (
+                                                  <Button size="sm" onClick={() => openUploadDialog(viewSubject.id, req)}
+                                                    disabled={(() => {
+                                                        if (viewSubject.vivaDate) {
+                                                            const deadline = new Date(viewSubject.vivaDate);
+                                                            deadline.setDate(deadline.getDate() - 1);
+                                                            deadline.setHours(23, 59, 59);
+                                                            return new Date() > deadline;
+                                                        }
+                                                        return false;
+                                                    })()}
+                                                  >
+                                                      {(() => {
+                                                           if (viewSubject.vivaDate) {
+                                                                const deadline = new Date(viewSubject.vivaDate);
+                                                                deadline.setDate(deadline.getDate() - 1);
+                                                                deadline.setHours(23, 59, 59);
+                                                                if (new Date() > deadline) return "Deadline Exceeded";
+                                                           }
+                                                           return "Upload File";
+                                                      })()}
+                                                  </Button>
+                                              )}
+                                          </div>
                                      </div>
                                  );
                              });
@@ -499,14 +600,12 @@ const StudentDashboard = () => {
                     {progress > 0 && <progress value={progress} max="100" className="w-full h-2" />}
                     
                     {previewUrl && (
-                        <div className="h-[200px] border rounded-md overflow-hidden bg-muted flex items-center justify-center">
+                        <div className="h-[300px] border rounded-md overflow-hidden bg-muted flex flex-col">
                             {selectedFile?.type === 'application/pdf' ? (
                                 <iframe src={previewUrl} className="w-full h-full" title="Preview" />
                             ) : (
-                                <div className="text-center p-4">
-                                    <FileText className="h-12 w-12 mx-auto text-primary mb-2" />
-                                    <p className="font-medium text-sm">{selectedFile?.name}</p>
-                                    <p className="text-xs text-muted-foreground">Preview not available for this file type</p>
+                                <div className="flex-1 w-full h-full overflow-auto bg-white p-4" ref={docxPreviewRef}>
+                                    {/* DOCX Render Container */}
                                 </div>
                             )}
                         </div>

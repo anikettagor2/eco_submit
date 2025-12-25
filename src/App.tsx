@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import RoleSelection from './pages/RoleSelection';
 import StudentDashboard from './pages/student/Dashboard';
 import ProfessorDashboard from './pages/professor/Dashboard';
+import AdminDashboard from './pages/admin/Dashboard';
 import Home from './pages/Home';
 import { Skeleton } from './components/ui/skeleton';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -31,12 +32,14 @@ const PrivateRoute = ({ children, allowedRoles }: { children: React.ReactNode, a
   if (userRole && window.location.pathname === '/role-selection') {
       if (userRole === 'student') return <Navigate to="/student/dashboard" />;
       if (userRole === 'professor') return <Navigate to="/professor/dashboard" />;
+      if (userRole === 'admin') return <Navigate to="/admin/dashboard" />;
   }
 
   if (allowedRoles && !allowedRoles.includes(userRole)) {
     // Unauthorized access, redirect to their dashboard
     if (userRole === 'student') return <Navigate to="/student/dashboard" />;
     if (userRole === 'professor') return <Navigate to="/professor/dashboard" />;
+    if (userRole === 'admin') return <Navigate to="/admin/dashboard" />;
     return <Navigate to="/" />; 
   }
 
@@ -68,6 +71,13 @@ function AppRoutes() {
         </PrivateRoute>
       } />
 
+      {/* Admin Routes */}
+      <Route path="/admin/dashboard" element={
+        <PrivateRoute allowedRoles={['admin']}>
+          <AdminDashboard />
+        </PrivateRoute>
+      } />
+
       {/* Home Route */}
       <Route path="/" element={<Home />} />
       
@@ -84,6 +94,7 @@ const RedirectHandler = () => {
     if (!userRole) return <Navigate to="/role-selection" />;
     if (userRole === 'student') return <Navigate to="/student/dashboard" />;
     if (userRole === 'professor') return <Navigate to="/professor/dashboard" />;
+    if (userRole === 'admin') return <Navigate to="/admin/dashboard" />;
     return <Navigate to="/login" />;
 };
 
