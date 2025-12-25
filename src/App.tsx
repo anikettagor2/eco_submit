@@ -5,7 +5,9 @@ import Register from './pages/Register';
 import RoleSelection from './pages/RoleSelection';
 import StudentDashboard from './pages/student/Dashboard';
 import ProfessorDashboard from './pages/professor/Dashboard';
+import Home from './pages/Home';
 import { Skeleton } from './components/ui/skeleton';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 const PrivateRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles?: string[] }) => {
   const { currentUser, userRole, loading } = useAuth();
@@ -66,8 +68,11 @@ function AppRoutes() {
         </PrivateRoute>
       } />
 
-      {/* Default Redirect */}
-      <Route path="/" element={<RedirectHandler />} />
+      {/* Home Route */}
+      <Route path="/" element={<Home />} />
+      
+      {/* Fallback Redirect */}
+      <Route path="*" element={<RedirectHandler />} />
     </Routes>
   );
 }
@@ -82,14 +87,22 @@ const RedirectHandler = () => {
     return <Navigate to="/login" />;
 };
 
-import { ThemeProvider } from './contexts/ThemeContext';
+const MainLayout = () => {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <div className="flex-grow">
+        <AppRoutes />
+      </div>
+    </div>
+  );
+};
 
 function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="eco-submit-theme">
       <AuthProvider>
         <Router>
-          <AppRoutes />
+          <MainLayout />
         </Router>
       </AuthProvider>
     </ThemeProvider>

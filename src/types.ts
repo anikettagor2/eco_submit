@@ -31,7 +31,7 @@ export interface Submission {
     mergedFilePath?: string;
     summary?: string;
     questions?: string[]; // Array of strings for questions
-    status: 'pending' | 'processing' | 'submitted' | 'reviewed';
+    status: 'pending' | 'processing' | 'processing_ai' | 'processed' | 'submitted' | 'reviewed' | 'error';
     timeslot?: string;
     marks?: number;
     professorSignature?: boolean;

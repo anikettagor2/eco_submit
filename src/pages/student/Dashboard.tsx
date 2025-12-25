@@ -71,8 +71,9 @@ const StudentDashboard = () => {
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            if (file.type !== 'application/pdf') {
-                alert('Please upload PDF files only');
+            const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
+            if (!validTypes.includes(file.type)) {
+                alert('Please upload PDF or DOCX files only');
                 return;
             }
             setSelectedFile(file);
@@ -107,7 +108,12 @@ const StudentDashboard = () => {
 
             if (result.isUnique) {
                 setTopicStatus('valid');
-                setTopicMessage("Topic is unique and approved!");
+                // @ts-ignore
+                if (result.isOfflineBypass) {
+                    setTopicMessage("⚠️ " + (result.message || "AI Verification Unavailable. Submission Allowed."));
+                } else {
+                    setTopicMessage("Topic is unique and approved!");
+                }
             } else {
                 setTopicStatus('invalid');
                 setTopicMessage(result.message || "Topic is too similar to an existing submission.");
@@ -418,7 +424,7 @@ const StudentDashboard = () => {
                         <div className="border-2 border-dashed rounded-lg p-8 text-center hover:bg-muted/50 transition-colors cursor-pointer relative">
                              <input 
                                 type="file" 
-                                accept="application/pdf"
+                                accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword"
                                 onChange={handleFileSelect}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                             />
@@ -428,7 +434,7 @@ const StudentDashboard = () => {
                                     <p className="font-medium text-foreground">{selectedFile.name}</p>
                                 ) : (
                                     <>
-                                    <p className="font-medium">Click to upload PDF</p>
+                                    <p className="font-medium">Click to upload PDF or DOCX</p>
                                     <p className="text-sm text-muted-foreground">or drag and drop</p>
                                     </>
                                 )}
@@ -464,8 +470,13 @@ const StudentDashboard = () => {
                             </div>
                             
                             {topicMessage && (
-                                <div className={`text-xs p-2 rounded flex items-start gap-2 ${topicStatus === 'valid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                <div className={`text-xs p-2 rounded flex items-start gap-2 ${
+                                    topicStatus === 'valid' 
+                                        ? (topicMessage.includes("⚠️") ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' : 'bg-green-100 text-green-700') 
+                                        : 'bg-red-100 text-red-700'
+                                }`}>
                                     {topicStatus === 'invalid' && <AlertTriangle className="h-4 w-4 shrink-0" />}
+                                    {topicMessage.includes("⚠️") && <AlertTriangle className="h-4 w-4 shrink-0 text-yellow-600" />}
                                     <span>{topicMessage}</span>
                                 </div>
                             )}
@@ -488,8 +499,16 @@ const StudentDashboard = () => {
                     {progress > 0 && <progress value={progress} max="100" className="w-full h-2" />}
                     
                     {previewUrl && (
-                        <div className="h-[200px] border rounded-md overflow-hidden bg-muted">
-                            <iframe src={previewUrl} className="w-full h-full" title="Preview" /> 
+                        <div className="h-[200px] border rounded-md overflow-hidden bg-muted flex items-center justify-center">
+                            {selectedFile?.type === 'application/pdf' ? (
+                                <iframe src={previewUrl} className="w-full h-full" title="Preview" />
+                            ) : (
+                                <div className="text-center p-4">
+                                    <FileText className="h-12 w-12 mx-auto text-primary mb-2" />
+                                    <p className="font-medium text-sm">{selectedFile?.name}</p>
+                                    <p className="text-xs text-muted-foreground">Preview not available for this file type</p>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

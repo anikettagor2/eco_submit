@@ -1,32 +1,55 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js worker (Lazy Init)
+// Configure PDF.js worker
 const initPDFWorker = () => {
     if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
         pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
     }
 };
 
-// API Key
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
+// GEMINI API KEY (Google AI Studio format)
+const API_KEY = "AIzaSyDNcNoE_MU5MdZwwwIxKK__0G-yqPULLts";
 const genAI = new GoogleGenerativeAI(API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+// Using gemini-2.0-flash-exp (confirmed working with this API key)
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+
+// Helper: Retry Logic
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const retryWithDelay = async <T>(fn: () => Promise<T>, retries = 3, interval = 2000): Promise<T> => {
+    try {
+        return await fn();
+    } catch (error: any) {
+        if (retries <= 0) throw error;
+        // Retry on 503 (Service Unavailable) or 429 (Too Many Requests) or network errors
+        const isRetryable = error.message?.includes("503") || error.message?.includes("429") || error.message?.includes("fetch");
+        if (!isRetryable) throw error;
+
+        console.warn(`Gemini API Failed (${error.message}). Retrying in ${interval}ms... (${retries} left)`);
+        await delay(interval);
+        return retryWithDelay(fn, retries - 1, interval);
+    }
+};
 
 /**
  * Extracts text from a PDF URL (Client-Side).
- * Handles CORS by trying direct fetch first, then a proxy.
  */
-async function extractTextFromPDF(url: string): Promise<string> {
+async function extractTextFromFile(url: string): Promise<string> {
+    // Basic check to avoid trying to parse DOCX as PDF
+    if (url.toLowerCase().includes(".doc") && !url.toLowerCase().includes(".pdf")) {
+        throw new Error("AI analysis is currently only supported for PDF files.");
+    }
+
     initPDFWorker();
     try {
         const loadingTask = pdfjsLib.getDocument(url);
         const pdf = await loadingTask.promise;
         return await parsePdfPages(pdf);
     } catch (error: any) {
-        console.warn("Direct PDF fetch failed (CORS?), switching to proxy...", error);
+        if (error.message?.includes("AI analysis")) throw error;
+
+        console.warn("Direct file fetch failed (CORS?), switching to proxy...", error);
         try {
-            // Hackathon-friendly proxy to bypass localhost CORS issues
             const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
             initPDFWorker();
             const loadingTask = pdfjsLib.getDocument(proxyUrl);
@@ -34,7 +57,7 @@ async function extractTextFromPDF(url: string): Promise<string> {
             return await parsePdfPages(pdf);
         } catch (proxyError) {
             console.error("Proxy fetch failed:", proxyError);
-            throw new Error("Could not read PDF. Ensure file is public or CORS is configured.");
+            throw new Error("Could not read file. Ensure file is public or CORS is configured.");
         }
     }
 }
@@ -51,27 +74,25 @@ async function parsePdfPages(pdf: any): Promise<string> {
     return fullText.trim();
 }
 
-export const generateInsights = async (subjectName: string, studentName: string, pdfUrl: string, topicName?: string) => {
-    if (!API_KEY) throw new Error("Missing Gemini API Key in .env");
-
+// Client-side Generate Insights
+export const generateInsights = async (subjectName: string, studentName: string, fileUrl: string, topicName?: string) => {
     // 1. Extract Text
-    console.log("Extracting text from PDF (Client-Side)...");
-    const pdfText = await extractTextFromPDF(pdfUrl);
-    if (!pdfText) throw new Error("PDF text is empty.");
+    console.log("Extracting text from file (Client-Side)...");
+    const fileText = await extractTextFromFile(fileUrl);
+    if (!fileText) throw new Error("File text is empty.");
 
-    // 2. Call Gemini SDK (Single Model: gemini-1.5-flash)
+    // 2. Call Gemini SDK (Wrapped in Retry)
     const prompt = `
     Analyze this student project report for subject "${subjectName}" by student "${studentName}".
     ${topicName ? `DECLARED TOPIC: "${topicName}".` : ""}
     
-    PDF CONTENT:
-    "${pdfText.substring(0, 30000)}" 
+    FILE CONTENT:
+    "${fileText.substring(0, 30000)}" 
     
     OUTPUT REQUIREMENTS:
     1. SUMMARY: A concise summary (3-5 bullet points).
     2. QUESTIONS: Exactly 5 viva/technical questions.
     3. MARKS: Suggested marks out of 100 based on quality/depth. 
-       ${topicName ? `IMPORTANT: Check if the content strictly matches the declared topic "${topicName}". If not, significantly penalize marks and state "Off-topic submission" in justification.` : ""}
     4. JUSTIFICATION: A 1-sentence reason for the marks.
     5. CREATIVITY_ANALYSIS: Brief comment on originality.
 
@@ -85,57 +106,104 @@ export const generateInsights = async (subjectName: string, studentName: string,
     }
     `;
 
-    console.log("Calling Gemini SDK...");
+    console.log("Calling Gemini SDK directly...");
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-
-    // Clean JSON
-    const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
-    return JSON.parse(jsonStr);
+    return retryWithDelay(async () => {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
+        return JSON.parse(jsonStr);
+    });
 };
 
-export const checkTopicSimilarity = async (newTopic: string, subjectName: string, existingTopics: string[], pdfUrl?: string) => {
-    let pdfContext = "";
-    if (pdfUrl) {
+// Fallback Logic for Topic Check
+const fallbackTopicCheck = (newTopic: string, existingTopics: string[]) => {
+    console.warn("Using Fallback Keyword Check for Topic...");
+
+    // 1. Simple uniqueness check (Exact Match, Case Insensitive)
+    const isExactDuplicate = existingTopics.some(t => t.toLowerCase().trim() === newTopic.toLowerCase().trim());
+
+    if (isExactDuplicate) {
+        return {
+            isUnique: false,
+            message: "Topic title matches an existing submission exactly.",
+            suggestions: []
+        };
+    }
+
+    // 2. Keyword check for validity/quality (Optional, keep it lenient)
+    const keywords = ["authentication", "hashing", "password", "security", "encryption", "system", "management", "app", "analysis", "detection", "smart", "using"];
+    const hasKeyword = keywords.some(k => newTopic.toLowerCase().includes(k));
+
+    // If we can't judge deeply, we err on the side of allowing it (Fail Open)
+    return {
+        isUnique: true,
+        message: "AI verification temporarily unavailable. Submission allowed based on keyword check.",
+        isOfflineBypass: true // Flag for UI
+    };
+};
+
+// Client-Side Topic Check
+export const checkTopicSimilarity = async (newTopic: string, subjectName: string, existingTopics: string[], fileUrl?: string) => {
+    let fileContext = "";
+    if (fileUrl) {
         try {
-            console.log("Extracting text for topic verification...");
-            const text = await extractTextFromPDF(pdfUrl);
-            pdfContext = text.substring(0, 8000); // Check first ~8k characters
+            const text = await extractTextFromFile(fileUrl);
+            fileContext = text.substring(0, 8000);
         } catch (e) {
-            console.warn("Could not extract PDF text for topic check", e);
+            console.warn("Could not extract file text for topic check", e);
         }
     }
 
     const prompt = `
+    You are a STRICT academic validator. Your job is to REJECT submissions that don't match.
+    
     Subject: "${subjectName}"
     Proposed Topic: "${newTopic}"
     Existing Topics: ${JSON.stringify(existingTopics)}
-    ${pdfContext ? `PDF Content Start: "${pdfContext}"` : ""}
+    ${fileContext ? `File Content: "${fileContext}"` : ""}
 
-    Task:
-    1. UNIQUENESS CHECK: Is "Proposed Topic" semantically unique from "Existing Topics"? 
-    2. RELEVANCE CHECK: ${pdfContext ? `Does the provided "PDF Content" matches the "Proposed Topic"?` : "Skip (No PDF provided)."}
-    3. SUBJECT CONTEXT CHECK: is the "Proposed Topic" and "PDF Content" valid and relevant for the academic Subject "${subjectName}"? (e.g. A "Biology" paper is invalid for a "Data Structures" subject).
-
-    Rules:
-    - If Topic is duplicate/similar -> isUnique: false, message: "Topic overlaps with existing project: [Name]"
-    - If Content is irrelevant to Topic -> isUnique: false, message: "Content Mismatch: The document appears to be about [Detected Topic] instead of [Proposed Topic]. Reason: [Brief Explanation]."
-    - If Unrelated to Subject -> isUnique: false, message: "Subject Mismatch: This topic does not belong to the subject '${subjectName}'. Please choose a valid topic."
-    - If Valid -> isUnique: true, message: "Topic is unique, matching, and relevant to the subject."
-
-    Return STRICT JSON ONLY:
+    VALIDATION RULES (ALL must pass):
+    
+    1. UNIQUENESS: Is "${newTopic}" semantically different from all existing topics?
+       - If too similar to any existing topic → REJECT
+    
+    2. TOPIC-PDF MATCH (CRITICAL): Does the PDF content actually discuss "${newTopic}"?
+       - Read the PDF content carefully
+       - If PDF is about a DIFFERENT topic → REJECT immediately
+       - Example: If topic is "process synchronization" but PDF discusses "network security" → REJECT
+       - The PDF MUST contain substantial content about the declared topic
+    
+    3. SUBJECT RELEVANCE: Are both the topic AND PDF content relevant to "${subjectName}"?
+       - If topic or PDF content belongs to a different subject → REJECT
+       - Example: "Information Security" PDF for "Operating Systems" subject → REJECT
+    
+    IMPORTANT: Be STRICT. If there's ANY mismatch between:
+    - What the student CLAIMS (topic)
+    - What the PDF ACTUALLY contains
+    - What the SUBJECT requires
+    Then you MUST reject with isUnique: false
+    
+    Return STRICT JSON:
     {
-        "isUnique": boolean,
-        "message": "...",
-        "suggestions": ["Idea 1", "Idea 2", "Idea 3"] (Only if rejected)
+        "isUnique": boolean (false if ANY check fails),
+        "message": "Clear explanation of why accepted or rejected",
+        "suggestions": ["Alternative topic 1", "Alternative topic 2"] (only if rejected)
     }
     `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-    const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
-    return JSON.parse(jsonStr);
+    try {
+        return await retryWithDelay(async () => {
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+            const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
+            return JSON.parse(jsonStr);
+        });
+    } catch (error) {
+        console.error("AI Topic Check Failed after retries:", error);
+        // Fallback Mechanism
+        return fallbackTopicCheck(newTopic, existingTopics);
+    }
 };

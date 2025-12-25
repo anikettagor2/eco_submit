@@ -128,6 +128,10 @@ const ProfessorDashboard = () => {
 
     const runAIGeneration = async (sub: Submission) => {
         try {
+            // Optimistic Update
+            setSelectedSubmission(prev => prev ? ({...prev, summary: "Generating Analysis...", status: "processing_ai" as const}) : null);
+
+            // Client-Side Call
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const insights: any = await generateInsights(sub.subjectName, sub.studentName, sub.originalFilePath, sub.topic);
             
@@ -137,9 +141,14 @@ const ProfessorDashboard = () => {
                 suggested_marks: insights.suggested_marks || 0,
                 justification: insights.justification || "Analysis completed.",
                 creativity_analysis: insights.justification || insights.creativity_analysis || "Analysis completed.",
-                analyzedAt: serverTimestamp()
+                analyzedAt: serverTimestamp(),
+                status: "processing_ai" as const // Keep it in processing state until Prof reviews? Or maybe reviewed? 
+                // Let's keep it 'processing_ai' or upgrade to 'processed' if we had that status.
+                // Reverting to earlier logic which didn't rely on 'processed' status as strictly.
             };
+            
             await updateDoc(doc(db, "submissions", sub.id), finalUpdates);
+            
             // Update local state to show new data immediately in the open dialog
             setSelectedSubmission(prev => prev ? ({...prev, ...finalUpdates}) : null);
         } catch (e: any) {
@@ -149,9 +158,11 @@ const ProfessorDashboard = () => {
                 summary: errorMessage,
                 questions: ["Unable to generate questions."],
                 suggested_marks: 0,
-                creativity_analysis: "Analysis failed."
+                creativity_analysis: "Analysis failed.",
+                status: "error" as const
             };
             setSelectedSubmission(prev => prev ? ({...prev, ...updates}) : null);
+            // Optionally update DB with error
         }
     };
 
@@ -544,17 +555,22 @@ const ProfessorDashboard = () => {
                     <div className="flex-1 overflow-hidden grid grid-cols-12 h-full">
                         {/* Left Panel: PDF Preview (Narrower) */}
                         <div className="col-span-12 lg:col-span-5 bg-muted/30 border-r h-full relative">
-                            {displaySub.originalFilePath ? (
-                                <iframe 
-                                    src={displaySub.originalFilePath} 
-                                    className="w-full h-full"
-                                    title="PDF Preview"
-                                />
-                            ) : (
-                                <div className="flex items-center justify-center h-full text-muted-foreground">
-                                    No PDF attached
-                                </div>
-                            )}
+                            {(() => {
+                                const fileUrl = displaySub.mergedFilePath || displaySub.originalFilePath;
+                                return fileUrl ? (
+                                    <div className="h-full bg-gray-100 dark:bg-gray-800">
+                                        <iframe 
+                                            src={`https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true`}
+                                            className="w-full h-full border-none"
+                                            title="File Preview"
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                                        No file attached
+                                    </div>
+                                );
+                            })()}
                         </div>
 
                         {/* Right Panel: AI Insights & Details (Wider) */}
