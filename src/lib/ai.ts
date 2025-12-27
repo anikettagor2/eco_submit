@@ -79,7 +79,7 @@ const getFileType = (buffer: ArrayBuffer): 'pdf' | 'docx' | 'unknown' => {
  * Extracts text from a File URL (Blob or Remote).
  * Auto-detects content type regardless of URL extension.
  */
-async function extractTextFromFile(url: string): Promise<string> {
+export async function extractTextFromFile(url: string): Promise<string> {
     try {
         // 1. Fetch the generic data first
         const response = await fetch(url);
@@ -171,6 +171,7 @@ export const generateInsights = async (subjectName: string, studentName: string,
     3. MARKS: Suggested marks out of 100 based on quality/depth. 
     4. JUSTIFICATION: A 1-sentence reason for the marks.
     5. CREATIVITY_ANALYSIS: Brief comment on originality.
+    6. PLAGIARISM_CHECK: Estimate a 'plagiarism_score' (0-100, where 0 is original and 100 is likely copied/AI-generated) based on generic phrasing or common patterns. Provide a 'plagiarism_note' explanation.
 
     Return STRICT JSON ONLY:
     {
@@ -178,7 +179,11 @@ export const generateInsights = async (subjectName: string, studentName: string,
         "questions": ["q1", "q2", "q3", "q4", "q5"],
         "suggested_marks": 75,
         "justification": "...",
-        "creativity_analysis": "..."
+        "creativity_analysis": "...",
+        "plagiarism_analysis": {
+            "score": 10,
+            "note": "Mostly original content."
+        }
     }
     `;
 
@@ -282,5 +287,51 @@ export const checkTopicSimilarity = async (newTopic: string, subjectName: string
         console.error("AI Topic Check Failed after retries:", error);
         // Fallback Mechanism
         return fallbackTopicCheck(newTopic, existingTopics);
+    }
+};
+
+// Winston plagiarism checker
+export const checkPlagiarismWinston = async (text: string) => {
+    const apiKey = "CjqAGdNtWisSNmBVvO6Bp5Y5IeY3IjaeHfbsp7Adeca0cb87";
+    const url = "https://api.gowinston.ai/v2/plagiarism";
+
+    // Winston requires min 100 chars
+    if (!text || text.length < 100) {
+        return { score: 0, note: "Text too short for analysis." };
+    }
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ text: text.substring(0, 100000) }) // Limit to safe max
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`Winston API Error: ${response.status} ${errText}`);
+        }
+
+        const data = await response.json();
+        console.log("Winston Plagiarism Result:", data);
+
+        // Map Result safely
+        // Typical Winston Response might be { score: 85, ... } or { results: ... }
+        // We fallback to checking common keys.
+        let score = 0;
+        if (data.result && typeof data.result.score === 'number') score = data.result.score;
+        else if (typeof data.score === 'number') score = data.score;
+        else if (data.plagiarism_score) score = data.plagiarism_score;
+
+        const note = `Detected ${score}% plagiarism via Winston AI.`;
+
+        return { score, note, details: data };
+
+    } catch (error) {
+        console.error("Winston Plagiarism Check Failed", error);
+        return { score: 0, note: "Service unavailable." };
     }
 };

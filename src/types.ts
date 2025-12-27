@@ -41,9 +41,14 @@ export interface Submission {
     timeslot?: string;
     marks?: number;
     professorSignature?: boolean;
+    professorSignatureUrl?: string;
     suggested_marks?: number;
     creativity_analysis?: string;
     justification?: string;
+    plagiarism_analysis?: {
+        score: number;
+        note: string;
+    };
     department?: string;
     rollNo?: string;
     sessionYear?: string;

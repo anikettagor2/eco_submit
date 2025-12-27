@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { renderAsync } from "docx-preview";
 import { useAuth } from "@/contexts/AuthContext";
 import { db, storage } from "@/lib/firebase";
-import { collection, query, where, addDoc, serverTimestamp, onSnapshot, getDocs } from "firebase/firestore";
+import { collection, query, where, addDoc, serverTimestamp, onSnapshot, getDocs, doc, getDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +17,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { ProfileDialog } from "@/components/ProfileDialog";
 import { User, FileText, CheckCircle, Clock, Search, AlertTriangle, Lightbulb, Camera, Trash2 } from "lucide-react";
 import { checkTopicSimilarity } from "@/lib/ai";
+import { addCoverPageToPDF } from "@/lib/pdfUtils";
 import { jsPDF } from "jspdf";
 
 const StudentDashboard = () => {
@@ -218,9 +219,65 @@ const StudentDashboard = () => {
                     let finalFileType = fileToUpload.type;
 
                     if (fileToUpload.type === 'application/pdf') {
-                         // We upload the original PDF directly.
-                         // The cover page will be generated dynamically when the professor views it.
-                         finalBlob = (await fileToUpload.arrayBuffer()) as unknown as ArrayBuffer;
+                         try {
+                             // Fetch Templates
+                             const templateSnap = await getDoc(doc(db, "settings", "templates"));
+                             const templateSettings = templateSnap.exists() ? templateSnap.data() : {};
+
+                             // Fetch Professor Details (Signature)
+                             let profName = "";
+                             let profSigUrl = "";
+                             
+                             if (subject?.professorId) {
+                                 try {
+                                     console.log("Fetching professor details for:", subject.professorId);
+                                     const profSnap = await getDoc(doc(db, "users", subject.professorId));
+                                     if (profSnap.exists()) {
+                                         const profData = profSnap.data();
+                                         profName = profData.name;
+                                         
+                                         if (profData.signatureUrl) {
+                                             console.log("Found Signature URL, converting to Base64...");
+                                             try {
+                                                 const imgResp = await fetch(profData.signatureUrl);
+                                                 const imgBlob = await imgResp.blob();
+                                                 profSigUrl = await new Promise((resolve) => {
+                                                     const reader = new FileReader();
+                                                     reader.onloadend = () => resolve(reader.result as string);
+                                                     reader.readAsDataURL(imgBlob);
+                                                 });
+                                                 console.log("Signature converted to Base64 successfully.");
+                                             } catch (imgErr) {
+                                                 console.error("Failed to convert signature to Base64:", imgErr);
+                                                 profSigUrl = profData.signatureUrl; // Fallback to URL
+                                             }
+                                         }
+                                     }
+                                 } catch (err) {
+                                     console.error("Failed to fetch professor details", err);
+                                 }
+                             }
+
+                             // Prepare Data
+                             const coverData = {
+                                 name: userData.name,
+                                 rollNo: userData.rollNo || "N/A",
+                                 department: userData.department || "Unknown",
+                                 sessionYear: userData.sessionYear || "2025-26",
+                                 subjectName: subject?.name || "Unknown",
+                                 subjectCode: subject?.code || "",
+                                 topic: topicStatus === 'valid' ? (topicMessage.replace("Topic Approved: ", "") || "Project") : "Assignment",
+                                 submissionType: selectedReqType,
+                                 professorName: profName || "Professor", 
+                                 professorSignatureUrl: profSigUrl || ""
+                             };
+
+                             // Merge
+                             const mergedBytes = await addCoverPageToPDF(finalBlob, coverData, templateSettings);
+                             finalBlob = mergedBytes.buffer as ArrayBuffer; // Update finalBlob to the merged version
+                         } catch (err) {
+                             console.error("Cover page merging failed, uploading original.", err);
+                         }
                     }
 
                     const storageRef = ref(storage, `submissions/${currentUser.uid}/${selectedSubject}/${fileName}`);
@@ -273,11 +330,14 @@ const StudentDashboard = () => {
         }
     };
 
-    // Filter subjects for the student's department
+    // Filter subjects for the student's department and semester
     const mySubjects = useMemo(() => {
         if (!userData?.department) return [];
-        return subjects.filter(sub => sub.department === userData.department);
-    }, [subjects, userData?.department]);
+        return subjects.filter(sub => 
+            sub.department === userData.department && 
+            sub.semester === userData.semester
+        );
+    }, [subjects, userData?.department, userData?.semester]);
 
     // Helper to find submission status for a specific requirement
     const getSubmissionStatus = (subjectId: string, reqType: string) => {
@@ -447,9 +507,21 @@ const StudentDashboard = () => {
                                          
                                           <div className="flex items-center gap-3">
                                               {sub ? (
-                                                  <div className="text-right">
-                                                      <StatusBadge status={sub.status} />
-                                                      {sub.marks && <div className="text-xs font-bold mt-1 text-green-600">{sub.marks}/100</div>}
+                                                  <div className="flex items-center gap-4">
+                                                      {sub.professorSignatureUrl && (
+                                                          <div className="flex flex-col items-end">
+                                                            <img 
+                                                                src={sub.professorSignatureUrl} 
+                                                                alt="Signature" 
+                                                                className="h-8 w-auto object-contain dark:invert" 
+                                                            />
+                                                            <span className="text-[10px] text-muted-foreground leading-none">Signed</span>
+                                                          </div>
+                                                      )}
+                                                      <div className="text-right">
+                                                          <StatusBadge status={sub.status} />
+                                                          {sub.marks && <div className="text-xs font-bold mt-1 text-green-600">{sub.marks}/100</div>}
+                                                      </div>
                                                   </div>
                                               ) : (
                                                   <Button size="sm" onClick={() => openUploadDialog(viewSubject.id, req)}

@@ -211,6 +211,9 @@ interface CoverPageData {
     professorName?: string;
     topic?: string;
     submissionType: string;
+    professorSignatureUrl?: string;
+    marks?: number | string;
+    currentDate?: string;
 }
 
 // We interpret "don't give those cover style options" as removing the style argument.
@@ -223,15 +226,15 @@ export const addCoverPageToPDF = async (
     _style: any = 'classic'
 ): Promise<Uint8Array> => {
     try {
-        const { htmlPage1, htmlPage2, htmlPage3 } = templateSettings;
+        const { htmlPage1, htmlPage2, htmlPage3, htmlPage4 } = templateSettings;
 
         // If no HTML configured, return original
-        if (!htmlPage1 && !htmlPage2 && !htmlPage3) {
+        if (!htmlPage1 && !htmlPage2 && !htmlPage3 && !htmlPage4) {
             console.warn("No HTML templates found in settings. Returning original.");
             return new Uint8Array(originalBytes);
         }
 
-        const pages = [htmlPage1, htmlPage2, htmlPage3].filter(Boolean);
+        const pages = [htmlPage1, htmlPage2, htmlPage3, htmlPage4].filter(Boolean);
         const images: string[] = [];
 
         // 1. Create a Hidden Container for Rendering

@@ -6,7 +6,7 @@ import { addCoverPageToPDF, addReviewStampToPDF } from "../../lib/pdfUtils";
 import { COLLEGE_DATA } from "../../lib/data";
 
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { collection, query, where, getDocs, addDoc, serverTimestamp, onSnapshot, doc, updateDoc, deleteField, deleteDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, addDoc, serverTimestamp, onSnapshot, doc, updateDoc, deleteField } from "firebase/firestore";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -203,17 +203,7 @@ const ProfessorDashboard = () => {
         setIsCreateOpen(true);
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _handleDeleteSubject = async (e: React.MouseEvent, id: string) => {
-        e.stopPropagation(); // Prevent tab switch or other clicks
-        if(!confirm("Are you sure you want to delete this subject? This cannot be undone.")) return;
-         try {
-            await deleteDoc(doc(db, "subjects", id));
-        } catch(e) { 
-            console.error(e); 
-            alert("Failed to delete subject."); 
-        }
-    };
+
     
     // Auto-fill department when opening
     useEffect(() => {
@@ -292,7 +282,7 @@ const ProfessorDashboard = () => {
                 topic: selectedSubmission.topic,
                 submissionType: selectedSubmission.submissionType || "Assignment",
                 marks: marks, // Add marks as a variable for the review page
-                currentDate: new Date().toLocaleDateString(),
+                currentDate: new Date().toLocaleString(),
                 professorSignatureUrl: userData?.signatureUrl || "" // Pass signature URL for template
             };
 
@@ -321,6 +311,7 @@ const ProfessorDashboard = () => {
                 marks: Number(marks),
                 status: 'reviewed',
                 professorSignature: true,
+                professorSignatureUrl: userData?.signatureUrl || "", 
                 reviewedFilePath: downloadURL, // Point to the new stamped file
                 
                 // Cleanup AI fields
@@ -427,6 +418,7 @@ const ProfessorDashboard = () => {
                 suggested_marks: insights.suggested_marks || 0,
                 justification: insights.justification || "Analysis completed.",
                 creativity_analysis: insights.justification || insights.creativity_analysis || "Analysis completed.",
+                plagiarism_analysis: insights.plagiarism_analysis || { score: 0, note: "Data unavailable" },
                 analyzedAt: serverTimestamp(),
                 status: "processing_ai" as const // Keep it in processing state until Prof reviews? Or maybe reviewed? 
                 // Let's keep it 'processing_ai' or upgrade to 'processed' if we had that status.
@@ -1166,7 +1158,21 @@ const ProfessorDashboard = () => {
                                             {displaySub.justification || displaySub.creativity_analysis || "Analyzing..."}
                                             </p>
                                         </div>
-                                        <div className="h-px bg-border/50" />
+                                    <div className="h-px bg-border/50" />
+                                    <div>
+                                        <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2 flex justify-between">
+                                            Plagiarism Estimate (AI)
+                                            {displaySub.plagiarism_analysis && (
+                                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${displaySub.plagiarism_analysis.score > 30 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                                                    {displaySub.plagiarism_analysis.score}% Similarity
+                                                </span>
+                                            )}
+                                        </h4>
+                                        <p className="text-sm leading-relaxed text-foreground">
+                                            {displaySub.plagiarism_analysis?.note || "Analysis pending..."}
+                                        </p>
+                                    </div>
+                                    <div className="h-px bg-border/50" />
                                         <div>
                                             <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">Viva Questions</h4>
                                             <ul className="text-sm space-y-2 list-none m-0 p-0">
