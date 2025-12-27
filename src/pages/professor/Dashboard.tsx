@@ -4,7 +4,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { db, storage } from "@/lib/firebase";
 import { addCoverPageToPDF, addReviewStampToPDF } from "../../lib/pdfUtils";
 import { COLLEGE_DATA } from "../../lib/data";
-import defaultLogo from '@/assets/mits-logo.png';
 
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { collection, query, where, getDocs, addDoc, serverTimestamp, onSnapshot, doc, updateDoc, deleteField, deleteDoc } from "firebase/firestore";
@@ -166,10 +165,15 @@ const ProfessorDashboard = () => {
                 await updateDoc(doc(db, "subjects", editingSubjectId), subjectData);
             } else {
                 // Check for duplicate subject
-                const q = query(collection(db, "subjects"), where("code", "==", newSubject.code), where("department", "==", newSubject.department || userData?.department));
+                const q = query(
+                    collection(db, "subjects"), 
+                    where("code", "==", newSubject.code), 
+                    where("department", "==", newSubject.department || userData?.department),
+                    where("section", "==", newSubject.section)
+                );
                 const existing = await getDocs(q);
                 if (!existing.empty) {
-                    alert("Subject with this code already exists!");
+                    alert("Subject with this code, department, and section already exists!");
                     return;
                 }
                 await addDoc(collection(db, "subjects"), subjectData);
@@ -296,7 +300,7 @@ const ProfessorDashboard = () => {
             const stampedPdfBytes = await addReviewStampToPDF(existingPdfBytes, {
                 professorName: userData?.name || "Professor",
                 collegeName: "Madhav Institute of Technology & Science",
-                logoUrl: defaultLogo, 
+                logoUrl: "https://raw.githubusercontent.com/anikettagor2/eco_submit/main/mits-logo.png", 
                 date: new Date().toLocaleString(),
                 templateSettings: templateConfig, // Pass the global config containing htmlPage4
                 subData: coverData // Pass data to fill variables in htmlPage4

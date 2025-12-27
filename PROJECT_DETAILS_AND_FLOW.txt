@@ -1,0 +1,97 @@
+EcoSubmit: Project Overview, Features, and Process Flow
+
+1. PROJECT OVERVIEW
+-------------------
+EcoSubmit is a comprehensive digital submission and grading platform designed to replace traditional paper-based assignments in educational institutions. It streamlines the workflow for students, professors, and administrators while significantly reducing paper waste ("Eco" friendly). The system integrates modern technologies including PDF manipulation, Digital Signatures, and AI-assisted analysis to enhance the academic evaluation process.
+
+2. CORE FEATURES
+----------------
+
+A. General
+    - **Role-Based Access Control (RBAC):** Distinct interfaces and capabilities for Students, Professors, and Administrators.
+    - **Authentication:** Secure login and registration using Firebase Authentication (Email/Password & Google).
+    - **Profile Management:** tailored profile setup for each role (e.g., Department, Roll No for students; Signature upload for professors).
+    - **Responsive Design:** Modern, mobile-friendly UI built with React and Tailwind CSS.
+    - **Dark Mode Support:** Fully integrated dark/light theme toggling.
+
+B. Student Features
+    - **Dashboard:** View all enrolled subjects and assignment statuses (Pending, Graded).
+    - **Assignment Upload:** Support for PDF and DOCX file formats.
+    - **Real-time Status:** Track submission progress (from "Submitted" to "Reviewed").
+    - **Digital Cover Pages:** Automatically generates standard college cover pages (Front Page, Index, Certificate) merged with their submission.
+    - **Access Reviewed Files:** Download the final graded assignment containing the professor's digital stamp and signature.
+
+C. Professor Features
+    - **Subject Management:** Create and manage unique subjects (restricted by Department and Section to prevent duplicates).
+    - **Digital Signature:** Upload, crop (300x100px), and save a digital signature for authenticating documents.
+    - **Submission Review:**
+        - View student submissions directly in the browser (PDF/DOCX preview).
+        - **AI Analysis (Gemini):** One-click AI generation of summaries, viva questions, creativity analysis, and suggested marks.
+    - **Digital Stamping:** "Stamp" submissions with a verification seal containing the college logo, professor name, date, and digital signature.
+    - **Grading:** Assign numeric marks (0-100) which are recorded in the system and on the document.
+
+D. Admin Features
+    - **Template Management:** A powerful HTML editor to design and save dynamic templates for Cover Pages (Page 1, 2, 3) and Post-Review Pages (Page 4).
+    - **Live Preview:** Real-time preview of how templates look with dummy data.
+    - **User Management:** Oversee platform users.
+    - **System Configuration:** Manage department lists and global settings.
+
+3. DETAILED PROCESS FLOW
+------------------------
+
+[ PROCESS 1: ONBOARDING ]
+1. User visits the landing page and clicks "Get Started".
+2. User authenticates via Login/Register.
+3. **Role Selection:** User selects their role (Student/Professor/Admin).
+    - *Student:* Enters Name, Department, Roll No, Semester, Section.
+    - *Professor:* Enters Name, Department, and UPLOADS DIGITAL SIGNATURE (Mandatory).
+    - *Admin:* Enters administrative credentials.
+4. Profile is saved to Firestore, and user is redirected to their specific Dashboard.
+
+[ PROCESS 2: PROFESSOR - SUBJECT CREATION ]
+1. Professor clicks "Create Subject" on Dashboard.
+2. Enters Subject Name, Code, Department, Semester, and Section.
+3. **Validation:** System checks database for existing subject with same Code + Dept + Section.
+    - If duplicate found -> Error Alert.
+    - If unique -> Subject Created.
+
+[ PROCESS 3: STUDENT - ASSIGNMENT SUBMISSION ]
+1. Student logs in and sees subjects matching their Department/Semester/Section.
+2. Clicks on a generic "Subject" card (or searches for specific subject).
+3. Uploads the assignment file (PDF or DOCX).
+4. System uploads file to Firebase Storage and creates a 'Submission' record in Firestore with status "Submitted".
+
+[ PROCESS 4: GRADING & REVIEW (The Core Loop) ]
+1. Professor selects a Subject.
+2. Sees list of submissions.
+3. Clicks a student's submission to open the **Grading Dialog**.
+4. **AI Assist (Optional):** Professor clicks "Enable AI Analysis".
+    - System sends file text to Google Gemini.
+    - Returns: Summary, 5 Viva Questions, Justification, Suggested Marks.
+    - Professor reviews these insights.
+5. **Marking:** Professor enters final marks (manually or accepts AI suggestion).
+6. **Finalize Review:** Professor clicks "Submit Grade".
+    - **Stamping:** System pulls the original PDF.
+    - Applies "Reviewed By [Prof Name]" stamp + College Logo + Date to bottom-right of EVERY page.
+    - (Currently Disabled/Configurable) Appends "Page 4" with detailed review summary.
+    - Uploads the new "Reviewed" PDF.
+    - Updates Firestore status to "Reviewed".
+
+[ PROCESS 5: STUDENT - POST-REVIEW ]
+1. Student checks Dashboard.
+2. Sees "Graded" status for the assignment.
+3. Opens the assignment.
+4. Views/Downloads the "Reviewed PDF" which now contains the professor's digital stamp of approval.
+
+4. TECHNICAL STACK & ARCHITECTURE
+---------------------------------
+- **Frontend:** React, TypeScript, Vite.
+- **Styling:** Tailwind CSS, Shadcn UI, Framer Motion (animations).
+- **Backend/Database:** Firebase Firestore (NoSQL).
+- **Storage:** Firebase Storage (Files, Signatures).
+- **AI Engine:** Google Gemini Pro (via API).
+- **PDF Processing:** `pdf-lib` (Document modification), `html2canvas` (HTML to Image conversion for templates).
+- **Deployment:** Ready for Vercel/Netlify integration.
+
+--------------------------------------------------------------------------------
+Generated for EcoSubmit Project Documentation.
